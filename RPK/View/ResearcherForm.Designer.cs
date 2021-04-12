@@ -79,7 +79,7 @@
             this.helpStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.backgroundInputControlsFiller = new System.ComponentModel.BackgroundWorker();
-            this.calculationBackgrounProcessor = new System.ComponentModel.BackgroundWorker();
+            this.calculationBackgroundProcessor = new System.ComponentModel.BackgroundWorker();
             this.tabControl.SuspendLayout();
             this.inputParametersPage.SuspendLayout();
             this.inputParametersLayout.SuspendLayout();
@@ -648,10 +648,13 @@
             this.backgroundInputControlsFiller.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundInputControlsFiller_DoWork);
             this.backgroundInputControlsFiller.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundInputControlsFiller_RunWorkerCompleted);
             // 
-            // calculationBackgrounProcessor
+            // calculationBackgroundProcessor
             // 
-            this.calculationBackgrounProcessor.WorkerReportsProgress = true;
-            this.calculationBackgrounProcessor.WorkerSupportsCancellation = true;
+            this.calculationBackgroundProcessor.WorkerReportsProgress = true;
+            this.calculationBackgroundProcessor.WorkerSupportsCancellation = true;
+            this.calculationBackgroundProcessor.DoWork += new System.ComponentModel.DoWorkEventHandler(this.CalculationBackgroundProcessor_DoWork);
+            this.calculationBackgroundProcessor.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.CalculationBackgroundProcessor_ProgressChanged);
+            this.calculationBackgroundProcessor.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.CalculationBackgroundProcessor_RunWorkerCompleted);
             // 
             // ResearcherForm
             // 
@@ -744,7 +747,7 @@
         private System.ComponentModel.BackgroundWorker backgroundInputControlsFiller;
         private InterfaceElements.CustomComboBox canalChooseComboBox;
         private InterfaceElements.CustomComboBox materialChooseComboBox;
-        private System.ComponentModel.BackgroundWorker calculationBackgrounProcessor;
+        private System.ComponentModel.BackgroundWorker calculationBackgroundProcessor;
     }
 }
 

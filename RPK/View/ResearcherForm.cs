@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -12,7 +13,7 @@ namespace RPK.View
 {
     public delegate (IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable,
             (double tempreture, double viscosity) qualityIndicators, double canalProductivity)
-            CalculationFunc(IEnumerable<Parameter> parameters, out double progressIndicator);
+            CalculationFunc(IEnumerable<Parameter> parameters, out int progressIndicator);
 
     public partial class ResearcherForm : Form
     {
@@ -34,6 +35,8 @@ namespace RPK.View
 
             canalChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
             materialChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
+
+            calculateStripMenuItem.Click += CalculateStripMenuItem_Click;
         }
 
         private void ComboBox_NewIndexSelected(object? sender, EventArgs e)
@@ -41,7 +44,7 @@ namespace RPK.View
             if (sender is ComboBox comboBox)
                 try
                 {
-                    backgroundInputControlsFiller.RunWorkerAsync(new[] { comboBox.SelectedItem, 
+                    backgroundInputControlsFiller.RunWorkerAsync(new[] { comboBox.SelectedItem,
                         (canalChooseComboBox.SelectedItem as Canal, materialChooseComboBox.SelectedItem as Material) });
                 }
                 catch
@@ -94,10 +97,10 @@ namespace RPK.View
 
                 IEnumerable<EmpiricalCoefficientOfMathModel> empiricalCoefficients = material.EmpiricalCoefficientOfMathModels;
 
-                result.Add(materialPropertiesLayout, 
+                result.Add(materialPropertiesLayout,
                     propertiesValues.Select(value => (Parameter)value));
 
-                result.Add(empiricalCoefficientsOfMathModelLayout, 
+                result.Add(empiricalCoefficientsOfMathModelLayout,
                     empiricalCoefficients.Select(coefficient => (Parameter)coefficient));
             }
 
@@ -162,14 +165,41 @@ namespace RPK.View
         {
             errorProvider.SetError(inputControl.MeasureUnitLabel, errorMessage);
 
+            try
+            {
+                Parameter parameter = InputControlsAndParameters[inputControl];
+
+                InputControlsAndParameters[inputControl] = parameter with { Value = null };
+            }
+            catch { }
+
             ChangeTabPageStatus(tabControl.SelectedTab);
+
+            TryEnableCalculateButt();
+        }
+
+        private void TryEnableCalculateButt()
+        {
+            if (InputControlsAndParameters.Keys.All(parameterInput => parameterInput is ParameterOutput) is not true)
+                calculateStripMenuItem.Enabled = InputControlsAndParameters.Keys
+                    .All(parameterInput => parameterInput.ParameterInputStatus is ParameterInputStatus.Validated);
         }
 
         private void InputControlAcquireResult(ParameterInput inputControl, object result)
         {
             errorProvider.SetError(inputControl.MeasureUnitLabel, null);
 
+            try
+            {
+                Parameter parameter = InputControlsAndParameters[inputControl];
+
+                InputControlsAndParameters[inputControl] = parameter with { Value = result };
+            }
+            catch { }
+
             ChangeTabPageStatus(tabControl.SelectedTab);
+
+            TryEnableCalculateButt();
         }
 
         private void BackgroundInputControlsFiller_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -276,8 +306,6 @@ namespace RPK.View
         {
             tableLayoutPanel.Controls.Clear();
 
-            InputControlsAndParameters[tableLayoutPanel] = parameterInputs;
-
             int parametersCount = parameterInputs.Count();
 
             float rowsSizeInPercent = 100 / parametersCount;
@@ -292,7 +320,9 @@ namespace RPK.View
                 tableLayoutPanel.RowStyles[i].SizeType = SizeType.Percent;
                 tableLayoutPanel.RowStyles[i].Height = rowsSizeInPercent;
 
-                ParameterInput parameterInput = parameterInputs.ElementAt(i);
+                ParameterInput parameterInput = parameterInputs.Keys.ElementAt(i);
+
+                InputControlsAndParameters[parameterInput] = parameterInputs[parameterInput];
 
                 parameterInput.Dock = DockStyle.Fill;
 
@@ -300,10 +330,13 @@ namespace RPK.View
             }
         }
 
-        private Dictionary<TableLayoutPanel, Dictionary<ParameterInput, Parameter>> 
-            InputControlsAndParameters { get; set; } = new();
+        private Dictionary<ParameterInput, Parameter> InputControlsAndParameters { get; set; } = new();
 
         private Dictionary<TabPage, TabPageStatus> PagesStatuses { get; set; } = new();
+
+        private CalculationDialog CalculationDialog { get; set; } = new();
+
+        private TaskDialogResult TaskDialogResult { get; set; }
 
         enum TabPageStatus
         {
@@ -311,6 +344,70 @@ namespace RPK.View
             Editing,
             Error,
             Incomplete
+        }
+
+        private void CalculateStripMenuItem_Click(object? sender, EventArgs e)
+        {
+            this.Enabled = false;
+            calculationBackgroundProcessor.RunWorkerAsync();
+            TaskDialogResult = CalculationDialog.Show();
+        }
+
+        private async void CalculationBackgroundProcessor_DoWork(object sender, DoWorkEventArgs e)
+        {
+            if (sender is not BackgroundWorker backgroundWorker)
+                return;
+
+            int progressIndicator = 0;
+
+            var result = await Task.Run(() => CalculationRequired?.Invoke(InputControlsAndParameters.Values, out progressIndicator));
+
+            await Task.Run(async () => 
+            {
+                while (backgroundWorker.IsBusy && backgroundWorker.CancellationPending is false)
+                {
+                    try
+                    {
+                        backgroundWorker.ReportProgress(progressIndicator);
+                        await Task.Delay(200);
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+            });
+
+            e.Result = result;
+        }
+
+        private void CalculationBackgroundProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (sender is not BackgroundWorker backgroundWorker || e is null)
+                return;
+
+            try
+            {
+                CalculationDialog.ReportProgress(e.ProgressPercentage);
+            }
+            catch
+            {
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Icon = TaskDialogIcon.Error,
+                    Caption = "Расчёт",
+                    Heading = "При расчёте что-то пошло не так...",
+                    Text = "Расчёт не удался."
+                }
+                );
+
+                backgroundWorker.CancelAsync();
+            }
+        }
+
+        private void CalculationBackgroundProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.Enabled = true;
         }
     }
 }
