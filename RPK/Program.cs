@@ -1,21 +1,10 @@
-using System;
-using System.Windows.Forms;
+using RPK.Presenter;
+using RPK.Repository;
 using RPK.View;
+using System.Windows.Forms;
 
-namespace RPK
-{
-    static class Program
-    {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ResearcherForm());
-        }
-    }
-}
+Application.SetHighDpiMode(HighDpiMode.SystemAware);
+Application.EnableVisualStyles();
+Application.SetCompatibleTextRenderingDefault(false);
+
+new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext()).Run();

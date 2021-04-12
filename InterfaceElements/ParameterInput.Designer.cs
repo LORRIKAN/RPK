@@ -1,5 +1,5 @@
 ﻿
-namespace RPK.View
+namespace RPK.InterfaceElements
 {
     partial class ParameterInput
     {
@@ -35,23 +35,23 @@ namespace RPK.View
             this.groupBox.SuspendLayout();
             this.SuspendLayout();
             // 
-            // nameLabel
+            // groupBox
             // 
             this.groupBox.Controls.Add(this.label);
             this.groupBox.Controls.Add(this.textBox);
             this.groupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox.Location = new System.Drawing.Point(0, 0);
-            this.groupBox.Name = "nameLabel";
-            this.groupBox.Size = new System.Drawing.Size(312, 68);
+            this.groupBox.Name = "groupBox";
+            this.groupBox.Size = new System.Drawing.Size(312, 71);
             this.groupBox.TabIndex = 0;
             this.groupBox.TabStop = false;
             this.groupBox.Text = "Наименование параметра";
             // 
-            // measureUnitLabel
+            // label
             // 
             this.label.AutoSize = true;
             this.label.Location = new System.Drawing.Point(232, 30);
-            this.label.Name = "measureUnitLabel";
+            this.label.Name = "label";
             this.label.Size = new System.Drawing.Size(75, 25);
             this.label.TabIndex = 1;
             this.label.Text = "Ед. изм.";
@@ -71,7 +71,7 @@ namespace RPK.View
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox);
             this.Name = "ParameterInput";
-            this.Size = new System.Drawing.Size(312, 68);
+            this.Size = new System.Drawing.Size(312, 71);
             this.groupBox.ResumeLayout(false);
             this.groupBox.PerformLayout();
             this.ResumeLayout(false);
@@ -82,6 +82,6 @@ namespace RPK.View
 
         private System.Windows.Forms.GroupBox groupBox;
         private System.Windows.Forms.Label label;
-        protected System.Windows.Forms.TextBox textBox;
+        private System.Windows.Forms.TextBox textBox;
     }
 }

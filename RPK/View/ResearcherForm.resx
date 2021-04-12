@@ -57,18 +57,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="coordinateColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
-    <value>True</value>
-  </metadata>
-  <metadata name="viscosityColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
-    <value>True</value>
-  </metadata>
-  <data name="imageList.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+  <data name="tabPagesImageList.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj01LjAuNC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAD4
-        CgAAAk1TRnQBSQFMAgEBBAEAATABAAEwAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CgAAAk1TRnQBSQFMAgEBBAEAAegBAAHoAQABEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -103,7 +97,7 @@
         AZQBkwVGARYB/wFtBnoCdAZ6ARMB9AR3AZ0B/wHCB3AB9AEAARsBGgFZBFMBGgcAAZQGTQHyAfAGRgEW
         AQcBcwV6AXMBbgV6AUsB7wEIA3cBnQP/AfAGcAG7AQAB/wNZBFMBGgYAB00CFwdGAf8BbQt6AXQBEgH/
         AZ0CdwGdBf8B8AVwAZYCAAEaA1kEUwEaBQAHTQIWB0YBAAHwAXMEegHrAW0EegFKAbwBAAGWAXcBlgP/
-        AfMD/wHwBXADAAEaA1kEUwEaBAAHTQEaAbwHRgEAAf8B+AF5A3oB6wHqA3oBdAHrAf8BAAGWAXcBnQL/
+        AfMD/wHwBXADAAEaA1kEUwEaBAAHTQEaAbwHRgEAAf8B7AF5A3oB6wHqA3oBdAHrAf8BAAGWAXcBnQL/
         AfMBlgGdA/8BwgNwAXEEAAEaA1kEUwEaAwAHTQEaAbwHRgIAAfMB6wN6AesB6gN6ARIB8gIAAZ0CdwGd
         AQgBlgJ3AZ0D/wHCAXABcQGdBQABGgNZBFMBGgIAB00B8gHwB0YDAAH3AXQCegHrAeoCegFSAe0DAAEI
         CHcBnQP/AZ0BdwEIBgABGgNZA1MBRgEaAQAHTQHzAfEHRgMAAfQBbQJ6AesB6gJ6ARIB9AMAAfQJdwGd
@@ -117,4 +111,19 @@
         AfABDwGAAQEB/wGBAYABAQH4AR8BwAEDAf8BwwHAAQMB+AEfAfABDwH/AecB4AEHAf4Bfws=
 </value>
   </data>
+  <metadata name="coordinateColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+    <value>True</value>
+  </metadata>
+  <metadata name="viscosityColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+    <value>True</value>
+  </metadata>
+  <metadata name="coordinateColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+    <value>True</value>
+  </metadata>
+  <metadata name="viscosityColumn.UserAddedColumn" type="System.Boolean, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+    <value>True</value>
+  </metadata>
+  <metadata name="$this.TrayHeight" type="System.Int32, System.Private.CoreLib, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e">
+    <value>61</value>
+  </metadata>
 </root>

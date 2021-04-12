@@ -1,21 +1,35 @@
 ﻿#nullable enable
+using RPK.DataValidation;
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using RPK.View.DataValidation;
 
-namespace RPK.View
+namespace RPK.InterfaceElements
 {
     public partial class ParameterInput : UserControl
     {
         public ParameterInput()
         {
             InitializeComponent();
+
+            Validator = new DoubleTypeParameterParserAndValidator();
+        }
+
+        private void Validator_Invalidated(string? errorMessage)
+        {
+            ParameterInputStatus = ParameterInputStatus.Error;
+            Invalidated?.Invoke(this, errorMessage ?? "Параметр был задан неверно");
+        }
+
+        private void Validator_Validated(object result)
+        {
+            ParameterInputStatus = ParameterInputStatus.Validated;
+            ParsedAndValidated?.Invoke(this, result);
         }
 
         public string ParameterName { get => groupBox.Text; set => groupBox.Text = value; }
 
-        public string MeasureUnit { get => label.Text; set => label.Text = value; }
+        public string? MeasureUnit { get => label.Text; set => label.Text = value; }
 
         [Browsable(false)]
         public Label MeasureUnitLabel => label;
@@ -26,9 +40,20 @@ namespace RPK.View
         [Browsable(false)]
         public GroupBox GroupBox => groupBox;
 
+        DataParserAndValidatorBase validator = new DoubleTypeParameterParserAndValidator();
         [Browsable(false)]
         [ReadOnly(true)]
-        public DataValidatorBase DefaultValidator { get; set; } = new DoubleTypeParameterValidator();
+        public DataParserAndValidatorBase Validator
+        {
+            get => validator;
+            set
+            {
+                validator = value;
+
+                validator.Validated += Validator_Validated;
+                validator.Invalidated += Validator_Invalidated;
+            }
+        }
 
         public event Action<ParameterInput, object>? ParsedAndValidated;
 
@@ -38,7 +63,7 @@ namespace RPK.View
         [ReadOnly(true)]
         public ParameterInputStatus ParameterInputStatus { get; private set; } = ParameterInputStatus.IsNullOrEmpty;
 
-        private void TextBox_Validating(object sender, CancelEventArgs e)
+        protected void TextBox_Validating(object sender, CancelEventArgs e)
         {
             if (this.textBox.Modified is false)
                 return;
@@ -52,17 +77,7 @@ namespace RPK.View
 
             var textBox = (TextBox)sender;
 
-            (object? result, string? errorMessage) = DefaultValidator.ValidateParameter(textBox.Text);
-
-            if (result is null)
-            {
-                ParameterInputStatus = ParameterInputStatus.Error;
-                Invalidated?.Invoke(this, errorMessage ?? "Параметр был задан неверно");
-                return;
-            }
-
-            ParameterInputStatus = ParameterInputStatus.Validated;
-            ParsedAndValidated?.Invoke(this, result);
+            Validator?.ValidateParameter(textBox.Text);
         }
     }
 
