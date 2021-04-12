@@ -390,6 +390,7 @@
             this.resultsTable.Location = new System.Drawing.Point(3, 27);
             this.resultsTable.Name = "resultsTable";
             this.resultsTable.ReadOnly = true;
+            this.resultsTable.RowHeadersVisible = false;
             this.resultsTable.RowHeadersWidth = 62;
             this.resultsTable.RowTemplate.Height = 33;
             this.resultsTable.Size = new System.Drawing.Size(676, 243);

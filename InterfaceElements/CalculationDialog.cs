@@ -34,6 +34,7 @@ namespace RPK.InterfaceElements
 
         TaskDialogCommandLinkButton ShowResultsButton { get; set; } = new("Показать результаты");
 
+        public TaskDialogResult TaskDialogResult { get; private set; } = TaskDialogResult.NotSet;
 
         public int ProgressBarMaxValue { get => InProgressPage.ProgressBar.Maximum; set => InProgressPage.ProgressBar.Maximum = value; }
 
@@ -95,36 +96,45 @@ namespace RPK.InterfaceElements
             };
         }
 
-        public TaskDialogResult Show()
+        public void Show()
         {
             InitializeInProgressPage();
             InitializeFinishedPage();
 
+            TaskDialogResult = TaskDialogResult.NotSet;
+
             TaskDialogButton result = TaskDialog.ShowDialog(InProgressPage);
 
             if (result == ShowResultsButton)
-                return TaskDialogResult.ShowResult;
+            {
+                TaskDialogResult = TaskDialogResult.ShowResult;
+                return;
+            }
             else if (result == TaskDialogButton.Close)
-                return TaskDialogResult.Closed;
+            {
+                TaskDialogResult = TaskDialogResult.Closed;
+                return;
+            }
 
-            return TaskDialogResult.Canceled;
+            TaskDialogResult = TaskDialogResult.Canceled;
         }
 
-        public TaskDialogResult Close()
+        public void Close()
         {
             InProgressPage.BoundDialog.Close();
-            return TaskDialogResult.Closed;
+            TaskDialogResult = TaskDialogResult.Closed;
         }
 
-        public TaskDialogResult Cancel()
+        public void Cancel()
         {
             InProgressPage.BoundDialog.Close();
-            return TaskDialogResult.Canceled;
+            TaskDialogResult = TaskDialogResult.Canceled;
         }
     }
 
     public enum TaskDialogResult
     {
+        NotSet,
         ShowResult,
         Closed,
         Canceled

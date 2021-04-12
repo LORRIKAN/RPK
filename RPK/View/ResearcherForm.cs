@@ -11,9 +11,7 @@ using System.Windows.Forms;
 
 namespace RPK.View
 {
-    public delegate (IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable,
-            (double tempreture, double viscosity) qualityIndicators, double canalProductivity)
-            CalculationFunc(IEnumerable<Parameter> parameters, out int progressIndicator);
+    public delegate CalculationResults CalculationFunc(IEnumerable<Parameter> parameters, out int progressIndicator);
 
     public partial class ResearcherForm : Form
     {
@@ -350,7 +348,7 @@ namespace RPK.View
         {
             this.Enabled = false;
             calculationBackgroundProcessor.RunWorkerAsync();
-            TaskDialogResult = CalculationDialog.Show();
+            CalculationDialog.Show();
         }
 
         private async void CalculationBackgroundProcessor_DoWork(object sender, DoWorkEventArgs e)
@@ -407,7 +405,85 @@ namespace RPK.View
 
         private void CalculationBackgroundProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            while (CalculationDialog.TaskDialogResult is TaskDialogResult.NotSet) { }
+
+            if (e.Result is not CalculationResults calculationResults)
+            {
+                TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Icon = TaskDialogIcon.Error,
+                    Caption = "Расчёт",
+                    Heading = "При расчёте что-то пошло не так...",
+                    Text = "Расчёт не удался."
+                });
+                return;
+            }
+
+            FillResultsTable(calculationResults.ResultsTable);
+
+            FillCharts(calculationResults.ResultsTable);
+
+            FillDiscreteResults(calculationResults.QualityIndicators, calculationResults.CanalProductivity);
+
+            tabControl.TabPages.Add(resultsPage);
+
             this.Enabled = true;
         }
+
+        private void FillDiscreteResults((double tempreture, double viscosity) qualityIndicators, double canalProductivity)
+        {
+            (double tempreture, double viscosity) = qualityIndicators;
+
+            productTemperatureOutput.Value = tempreture;
+            productViscosityOutput.Value = viscosity;
+
+            canalProductivityOutput.Value = canalProductivity;
+        }
+
+        private void FillCharts(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable)
+        {
+            var coordinates = new List<double>();
+            var tempetures = new List<double>();
+            var viscosities = new List<double>();
+
+            foreach ((double coordinate, double tempreture, double viscosity) row in resultsTable)
+            {
+                (double coordinate, double tempreture, double viscosity) = row;
+
+                coordinates.Add(coordinate);
+                tempetures.Add(tempreture);
+                viscosities.Add(viscosity);
+            }
+
+            temperaturePlot.plt.PlotScatter(coordinates.ToArray(), tempetures.ToArray());
+            viscosityPlot.plt.PlotScatter(coordinates.ToArray(), viscosities.ToArray());
+        }
+
+        private void FillResultsTable(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable)
+        {
+            foreach ((double coordinate, double tempreture, double viscosity) row in resultsTable)
+            {
+                (double coordinate, double tempreture, double viscosity) = row;
+                this.resultsTable.Rows.Add(coordinate, tempreture, viscosity);
+            }
+        }
+    }
+
+    public record CalculationResults
+    {
+        public CalculationResults(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable, 
+            (double tempreture, double viscosity) qualityIndicators, 
+            double canalProductivity)
+        {
+            ResultsTable = resultsTable;
+            QualityIndicators = qualityIndicators;
+            CanalProductivity = canalProductivity;
+        }
+
+        public IEnumerable<(double coordinate, double tempreture, double viscosity)> ResultsTable { get; init; }
+
+        public (double tempreture, double viscosity) QualityIndicators { get; init; }
+
+        public double CanalProductivity { get; init; }
     }
 }
