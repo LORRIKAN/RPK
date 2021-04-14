@@ -3,8 +3,27 @@ using RPK.Model;
 
 namespace RPK.View
 {
-    public record Parameter(long ParameterId, string Name, string Designation, string MeasureUnit, object? Value)
+    public record Parameter
     {
+        public Parameter(long? parameterId, string name, string designation, string measureUnit, object? value)
+        {
+            ParameterId = parameterId;
+            Name = name;
+            Designation = designation;
+            MeasureUnit = measureUnit;
+            Value = value;
+        }
+
+        public long? ParameterId { get; init; }
+
+        public string Name { get; init; }
+
+        public string Designation { get; init; }
+
+        public string MeasureUnit { get; init; }
+
+        public object? Value { get; set; }
+
         public static explicit operator Parameter(EmpiricalCoefficientOfMathModel empiricalCoefficientOfMathModel)
         {
             return InitializeParameter(empiricalCoefficientOfMathModel.Parameter, empiricalCoefficientOfMathModel.ParameterValue);
@@ -24,17 +43,17 @@ namespace RPK.View
         {
             return new Parameter
             (
-                ParameterId: modelParameter.ParameterId,
-                Name: modelParameter.Name,
-                MeasureUnit: modelParameter.MeasureUnit,
-                Designation: modelParameter.Designation,
-                Value: parameterValue
+                parameterId: modelParameter.ParameterId,
+                name: modelParameter.Name,
+                measureUnit: modelParameter.MeasureUnit,
+                designation: modelParameter.Designation,
+                value: parameterValue
             );
         }
     }
 
-    public record ParameterWithBounds(long ParameterId, string Name, string Designation, string MeasureUnit, 
-        object? Value, double LowerBound, double UpperBound) : 
+    public record ParameterWithBounds(long? ParameterId, string Name, string Designation, string MeasureUnit,
+        object? Value, double LowerBound, double UpperBound) :
         Parameter(ParameterId, Name, Designation, MeasureUnit, Value)
     {
         public static explicit operator ParameterWithBounds(VariableParameter variableParameter)

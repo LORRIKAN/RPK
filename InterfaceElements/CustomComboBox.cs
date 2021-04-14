@@ -7,8 +7,8 @@ namespace RPK.InterfaceElements
     {
         public CustomComboBox()
         {
-            
-            base.SelectedIndexChanged += (sender, e) => 
+
+            base.SelectedIndexChanged += (sender, e) =>
             {
                 if (this.SelectedIndex != PreviousSelectedIndex)
                 {

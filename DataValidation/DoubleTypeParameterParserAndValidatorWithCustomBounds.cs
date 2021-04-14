@@ -18,6 +18,7 @@ namespace RPK.DataValidation
             ValidateConditions.Remove(NotEqualsZeroCondition);
             ValidateConditions.Remove(NotLessThanZeroCondition);
             ValidateConditions.Add(NotLessThanLowerBoundCondition);
+            ValidateConditions.Add(NotMoreThanUpperBoundCondition);
         }
 
         protected (bool result, string? errorMessage) NotLessThanLowerBoundCondition(object parsedValue)
@@ -30,7 +31,7 @@ namespace RPK.DataValidation
 
         protected (bool result, string? errorMessage) NotMoreThanUpperBoundCondition(object parsedValue)
         {
-            if ((double)parsedValue < UpperBound)
+            if ((double)parsedValue > UpperBound)
                 return (false, $"Значение не может быть больше {UpperBound}");
             else
                 return (true, null);

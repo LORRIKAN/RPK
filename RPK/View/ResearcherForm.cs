@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace RPK.View
 {
-    public delegate CalculationResults CalculationFunc(IEnumerable<Parameter> parameters, out int progressIndicator);
+    public delegate void CalculationFunc(ref CalculationParameters calculationParameters, out CalculationResults calculationResults);
 
     public partial class ResearcherForm : Form
     {
@@ -21,7 +21,6 @@ namespace RPK.View
 
             exitStripMenuItem.Click += (sender, e) => this.Close();
 
-            tabControl.TabPages.Remove(resultsPage);
             tabControl.Selected += (sender, e) =>
             {
                 foreach (TabPage tabPage in PagesStatuses.Keys)
@@ -30,6 +29,14 @@ namespace RPK.View
             PagesStatuses.Add(inputParametersPage, TabPageStatus.Incomplete);
             PagesStatuses.Add(variableParametersPage, TabPageStatus.Incomplete);
             PagesStatuses.Add(mathModelParametersPage, TabPageStatus.Incomplete);
+
+            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала");
+            temperaturePlot.plt.XLabel("Длина канала (м)");
+            temperaturePlot.plt.YLabel("Температура материала (°C)");
+
+            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала");
+            viscosityPlot.plt.XLabel("Длина канала (м)");
+            viscosityPlot.plt.YLabel("Вязкость материала (Па⋅с)");
 
             canalChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
             materialChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
@@ -167,7 +174,7 @@ namespace RPK.View
             {
                 Parameter parameter = InputControlsAndParameters[inputControl];
 
-                InputControlsAndParameters[inputControl] = parameter with { Value = null };
+                InputControlsAndParameters[inputControl].Value = null;
             }
             catch { }
 
@@ -178,9 +185,11 @@ namespace RPK.View
 
         private void TryEnableCalculateButt()
         {
-            if (InputControlsAndParameters.Keys.All(parameterInput => parameterInput is ParameterOutput) is not true)
-                calculateStripMenuItem.Enabled = InputControlsAndParameters.Keys
-                    .All(parameterInput => parameterInput.ParameterInputStatus is ParameterInputStatus.Validated);
+                calculateStripMenuItem.Enabled = 
+                    InputControlsAndParameters.Keys
+                    .All(parameterInput => parameterInput.ParameterInputStatus is ParameterInputStatus.Validated) &&
+                    !InputControlsAndParameters.Keys
+                    .All(parameterInput => parameterInput is ParameterOutput);
         }
 
         private void InputControlAcquireResult(ParameterInput inputControl, object result)
@@ -191,7 +200,7 @@ namespace RPK.View
             {
                 Parameter parameter = InputControlsAndParameters[inputControl];
 
-                InputControlsAndParameters[inputControl] = parameter with { Value = result };
+                InputControlsAndParameters[inputControl].Value = result;
             }
             catch { }
 
@@ -332,10 +341,6 @@ namespace RPK.View
 
         private Dictionary<TabPage, TabPageStatus> PagesStatuses { get; set; } = new();
 
-        private CalculationDialog CalculationDialog { get; set; } = new();
-
-        private TaskDialogResult TaskDialogResult { get; set; }
-
         enum TabPageStatus
         {
             Ok,
@@ -347,143 +352,137 @@ namespace RPK.View
         private void CalculateStripMenuItem_Click(object? sender, EventArgs e)
         {
             this.Enabled = false;
-            calculationBackgroundProcessor.RunWorkerAsync();
-            CalculationDialog.Show();
-        }
+            this.SuspendLayout();
+            CoordinatesValues.Clear();
+            TemperaturesValues.Clear();
+            ViscositiesValues.Clear();
 
-        private async void CalculationBackgroundProcessor_DoWork(object sender, DoWorkEventArgs e)
-        {
-            if (sender is not BackgroundWorker backgroundWorker)
-                return;
-
-            int progressIndicator = 0;
-
-            var result = await Task.Run(() => CalculationRequired?.Invoke(InputControlsAndParameters.Values, out progressIndicator));
-
-            await Task.Run(async () => 
+            var calculationProcessor = new CalculationProcessor();
+            calculationProcessor.CalculationFunc += CalculationRequired;
+            calculationProcessor.CanalProductivityOutput += (canalProductivity) => canalProductivityOutput.Value = string.Format("{0:0.00}", canalProductivity);
+            calculationProcessor.QualityIndicatorsOutput += ((double temperature, double viscosity) qualityIndicators) => 
             {
-                while (backgroundWorker.IsBusy && backgroundWorker.CancellationPending is false)
-                {
-                    try
-                    {
-                        backgroundWorker.ReportProgress(progressIndicator);
-                        await Task.Delay(200);
-                    }
-                    catch
-                    {
-                        break;
-                    }
-                }
-            });
+                (double temperature, double viscosity) = qualityIndicators;
+                productTemperatureOutput.Value = string.Format("{0:0.00}", temperature);
+                productViscosityOutput.Value = string.Format("{0:0.00}", viscosity);
+            };
 
-            e.Result = result;
-        }
+            calculationProcessor.ContiniousValuesOutputPreparations = new List<Action> { PreparePlots, PrepareResultsTable };
+            calculationProcessor.ContiniousValuesOutputs = new List<Action<(double coordinate, double temperature, double viscosity)>> { AddResultToResultsLists };
+            calculationProcessor.ContiniousValuesOutputFinalizations = new List<Action> { FinalizationForResultsGrid, FinalizationForPlots };
 
-        private void CalculationBackgroundProcessor_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            if (sender is not BackgroundWorker backgroundWorker || e is null)
-                return;
+            TaskDialogResult taskDialogResult = calculationProcessor.ProceedCalculation(InputControlsAndParameters.Values);
 
-            try
+            if (taskDialogResult is TaskDialogResult.Canceled or TaskDialogResult.Closed)
             {
-                CalculationDialog.ReportProgress(e.ProgressPercentage);
-            }
-            catch
-            {
-                TaskDialog.ShowDialog(new TaskDialogPage
-                {
-                    Icon = TaskDialogIcon.Error,
-                    Caption = "Расчёт",
-                    Heading = "При расчёте что-то пошло не так...",
-                    Text = "Расчёт не удался."
-                }
-                );
+                temperaturePlot.plt.Clear();
+                viscosityPlot.plt.Clear();
+                resultsGrid.Rows.Clear();
 
-                backgroundWorker.CancelAsync();
-            }
-        }
+                IEnumerable<ParameterOutput> discreteResultsOutputs = FindAllChildControls<ParameterOutput>(resultsPage.Controls);
+                foreach (ParameterOutput parameterOutput in discreteResultsOutputs)
+                    parameterOutput.Value = null;
 
-        private void CalculationBackgroundProcessor_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            while (CalculationDialog.TaskDialogResult is TaskDialogResult.NotSet) { }
-
-            if (e.Result is not CalculationResults calculationResults)
-            {
-                TaskDialog.ShowDialog(new TaskDialogPage
-                {
-                    Icon = TaskDialogIcon.Error,
-                    Caption = "Расчёт",
-                    Heading = "При расчёте что-то пошло не так...",
-                    Text = "Расчёт не удался."
-                });
+                this.Enabled = true;
+                this.BringToFront();
                 return;
             }
 
-            FillResultsTable(calculationResults.ResultsTable);
+            tabControl.SelectedTab = resultsPage;
 
-            FillCharts(calculationResults.ResultsTable);
-
-            FillDiscreteResults(calculationResults.QualityIndicators, calculationResults.CanalProductivity);
-
-            tabControl.TabPages.Add(resultsPage);
+            this.ResumeLayout();
+            this.PerformLayout();
 
             this.Enabled = true;
+
+            this.BringToFront();
         }
 
-        private void FillDiscreteResults((double tempreture, double viscosity) qualityIndicators, double canalProductivity)
+        List<double> CoordinatesValues { get; set; } = new();
+
+        List<double> TemperaturesValues { get; set; } = new();
+
+        List<double> ViscositiesValues { get; set; } = new();
+
+        private void PreparePlots()
         {
-            (double tempreture, double viscosity) = qualityIndicators;
-
-            productTemperatureOutput.Value = tempreture;
-            productViscosityOutput.Value = viscosity;
-
-            canalProductivityOutput.Value = canalProductivity;
-        }
-
-        private void FillCharts(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable)
-        {
-            var coordinates = new List<double>();
-            var tempetures = new List<double>();
-            var viscosities = new List<double>();
-
-            foreach ((double coordinate, double tempreture, double viscosity) row in resultsTable)
+            this.Invoke(new MethodInvoker(() =>
             {
-                (double coordinate, double tempreture, double viscosity) = row;
+            temperaturePlot.SuspendLayout();
+            viscosityPlot.SuspendLayout();
 
-                coordinates.Add(coordinate);
-                tempetures.Add(tempreture);
-                viscosities.Add(viscosity);
-            }
-
-            temperaturePlot.plt.PlotScatter(coordinates.ToArray(), tempetures.ToArray());
-            viscosityPlot.plt.PlotScatter(coordinates.ToArray(), viscosities.ToArray());
+            temperaturePlot.plt.Clear();
+            viscosityPlot.plt.Clear();
+            }));
         }
 
-        private void FillResultsTable(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable)
+        private void PrepareResultsTable()
         {
-            foreach ((double coordinate, double tempreture, double viscosity) row in resultsTable)
+            this.Invoke(new MethodInvoker(() =>
             {
-                (double coordinate, double tempreture, double viscosity) = row;
-                this.resultsTable.Rows.Add(coordinate, tempreture, viscosity);
-            }
+                resultsGrid.SuspendLayout();
+                resultsGrid.Rows.Clear();
+            }));
+        }
+
+        private void AddResultToResultsLists((double coordinate, double temperature, double viscosity) result)
+        {
+            (double coordinate, double temperature, double viscosity) = result;
+            CoordinatesValues.Add(coordinate);
+            TemperaturesValues.Add(temperature);
+            ViscositiesValues.Add(viscosity);
+        }
+
+        private void FinalizationForResultsGrid()
+        {
+            this.Invoke(new MethodInvoker(() =>
+            {
+                var gridRows = new List<DataGridViewRow>(CoordinatesValues.Count);
+
+                for (int i = 0; i < CoordinatesValues.Count; i++)
+                {
+                    var gridRow = new DataGridViewRow();
+
+                    gridRow.CreateCells(resultsGrid, CoordinatesValues[i],
+                        $"{TemperaturesValues[i]:0.00}", $"{ViscositiesValues[i]:0.00}");
+
+                    gridRows.Add(gridRow);
+                }
+
+                resultsGrid.Rows.AddRange(gridRows.ToArray());
+                resultsGrid.ResumeLayout();
+            }));
+        }
+
+        private void FinalizationForPlots()
+        {
+            temperaturePlot.plt.PlotScatter(CoordinatesValues.ToArray(), TemperaturesValues.ToArray());
+            viscosityPlot.plt.PlotScatter(CoordinatesValues.ToArray(), ViscositiesValues.ToArray());
+
+            temperaturePlot.ResumeLayout();
+            viscosityPlot.ResumeLayout();
         }
     }
 
-    public record CalculationResults
+    public struct CalculationResults
     {
-        public CalculationResults(IEnumerable<(double coordinate, double tempreture, double viscosity)> resultsTable, 
-            (double tempreture, double viscosity) qualityIndicators, 
-            double canalProductivity)
-        {
-            ResultsTable = resultsTable;
-            QualityIndicators = qualityIndicators;
-            CanalProductivity = canalProductivity;
-        }
+        public IAsyncEnumerable<(double coordinate, double tempreture, double viscosity)> ResultsTable { get; set; }
 
-        public IEnumerable<(double coordinate, double tempreture, double viscosity)> ResultsTable { get; init; }
+        public (double tempreture, double viscosity) QualityIndicators { get; set; }
 
-        public (double tempreture, double viscosity) QualityIndicators { get; init; }
+        public double CanalProductivity { get; set; }
+    }
 
-        public double CanalProductivity { get; init; }
+    public struct CalculationParameters
+    {
+        public IEnumerable<Parameter> Parameters { get; set; }
+
+        public Action<double> ProgressIncrementor { get; set; }
+
+        public int ProgressMaxValueForCalculation { get; set; }
+
+        public int? IteratableResultsCalculationsStepsCount { get; set; }
+
+        public CancellationToken CancellationToken { get; set; }
     }
 }

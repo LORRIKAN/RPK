@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RPK.InterfaceElements
@@ -17,43 +13,28 @@ namespace RPK.InterfaceElements
             InitializeFinishedPage();
         }
 
-        public void ReportProgress(int progressValue)
-        {
-            if (InProgressPage.ProgressBar is null)
-                return;
-
-            InProgressPage.ProgressBar.Value = progressValue;
-
-            if (InProgressPage.ProgressBar.Maximum >= progressValue)
-                InProgressPage.Navigate(FinishedPage);
-        }
+        public event Func<IAsyncEnumerable<(int progressPercent, string state)>> GetProgress;
 
         TaskDialogPage InProgressPage { get; set; }
 
         TaskDialogPage FinishedPage { get; set; }
 
-        TaskDialogCommandLinkButton ShowResultsButton { get; set; } = new("Показать результаты");
+        TaskDialogButton ShowResultsButton { get; set; } = new TaskDialogCommandLinkButton("Показать результаты");
 
-        public TaskDialogResult TaskDialogResult { get; private set; } = TaskDialogResult.NotSet;
-
-        public int ProgressBarMaxValue { get => InProgressPage.ProgressBar.Maximum; set => InProgressPage.ProgressBar.Maximum = value; }
-
-        public int ProgressBarMinValue { get => InProgressPage.ProgressBar.Minimum; set => InProgressPage.ProgressBar.Minimum = value; }
+        TaskDialogButton CancelButton { get; set; } = new TaskDialogButton("Отмена") { Enabled = false, AllowCloseDialog = true };
 
         private void InitializeInProgressPage()
         {
-            var cancelButton = new TaskDialogButton { Text = "Отмена", Enabled = false, AllowCloseDialog = true };
-
             InProgressPage = new TaskDialogPage()
             {
-                Caption = "Процесс расчёта",
-                Heading = "Расчёт в процессе...",
-                Text = "Пожалуйста подождите, пока идёт расчёт.",
+                Caption = "Процессы расчёта и визуализации",
+                Heading = "Расчёт и визуализация в процессе...",
+                Text = "Пожалуйста подождите, пока идут расчёт и визуализация.",
                 Icon = TaskDialogIcon.Information,
                 AllowCancel = false,
                 AllowMinimize = false,
 
-                Verification = new TaskDialogVerificationCheckBox() { Text = "Я действительно хочу отменить процесс расчёта." },
+                Verification = new TaskDialogVerificationCheckBox() { Text = "Я действительно хочу отменить процессы расчёта и визуализации." },
 
                 ProgressBar = new TaskDialogProgressBar()
                 {
@@ -68,75 +49,73 @@ namespace RPK.InterfaceElements
                     ExpandedButtonText = "Скрыть",
                 },
 
-                Buttons = { cancelButton },
+                Buttons = { CancelButton },
             };
 
             TaskDialogVerificationCheckBox checkBox = InProgressPage.Verification;
             checkBox.CheckedChanged += (sender, e) =>
             {
-                cancelButton.Enabled = checkBox.Checked;
+                CancelButton.Enabled = checkBox.Checked;
+            };
+
+            InProgressPage.Created += async (s, e) =>
+            {
+                // Run the background operation and iterate over the streamed values to update
+                // the progress. Because we call the async method from the GUI thread,
+                // it will use this thread's synchronization context to run the continuations,
+                // so we don't need to use Control.[Begin]Invoke() to schedule the callbacks.
+                var progressBar = InProgressPage.ProgressBar;
+
+                await foreach ((int progressPercent, string status) progressValue in GetProgress())
+                {
+                    // When we display the first progress, switch the marquee progress bar
+                    // to a regular one.
+                    if (progressBar.State == TaskDialogProgressBarState.Marquee)
+                        progressBar.State = TaskDialogProgressBarState.Normal;
+
+                    (int progressPercent, string status) = progressValue;
+
+                    progressBar.Value = progressPercent;
+                    InProgressPage.Expander.Text = $"{status}: {progressPercent} %";
+                }
+
+                // Work is finished, so navigate to the third page.
+                InProgressPage.Navigate(FinishedPage);
             };
         }
 
         private void InitializeFinishedPage()
         {
-            TaskDialogButton showResultsButton = new TaskDialogCommandLinkButton("Показать результаты");
-
             FinishedPage = new TaskDialogPage()
             {
-                Caption = "Процесс расчёта",
-                Heading = "Расчёт завершён!",
-                Text = "Процесс расчёта завершён.",
+                Caption = "Процессы расчёта и визуализации",
+                Heading = "Расчёт и визуализация завершёны!",
+                Text = "Процессы расчёта и визуализации завершены.",
                 Icon = TaskDialogIcon.ShieldSuccessGreenBar,
                 Buttons =
                 {
                     TaskDialogButton.Close,
-                    showResultsButton
+                    ShowResultsButton
                 }
             };
         }
 
-        public void Show()
+        public TaskDialogResult Show()
         {
-            InitializeInProgressPage();
-            InitializeFinishedPage();
-
-            TaskDialogResult = TaskDialogResult.NotSet;
-
             TaskDialogButton result = TaskDialog.ShowDialog(InProgressPage);
 
             if (result == ShowResultsButton)
-            {
-                TaskDialogResult = TaskDialogResult.ShowResult;
-                return;
-            }
-            else if (result == TaskDialogButton.Close)
-            {
-                TaskDialogResult = TaskDialogResult.Closed;
-                return;
-            }
-
-            TaskDialogResult = TaskDialogResult.Canceled;
-        }
-
-        public void Close()
-        {
-            InProgressPage.BoundDialog.Close();
-            TaskDialogResult = TaskDialogResult.Closed;
-        }
-
-        public void Cancel()
-        {
-            InProgressPage.BoundDialog.Close();
-            TaskDialogResult = TaskDialogResult.Canceled;
+                return TaskDialogResult.ShowResults;
+            else if (result == CancelButton)
+                return TaskDialogResult.Canceled;
+            return TaskDialogResult.Closed;
         }
     }
 
     public enum TaskDialogResult
     {
-        NotSet,
-        ShowResult,
-        Closed,
-        Canceled
+        ShowResults,
+        Canceled,
+        Closed
     }
 }

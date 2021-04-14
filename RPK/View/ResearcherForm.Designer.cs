@@ -52,12 +52,11 @@
             this.resultsPage = new System.Windows.Forms.TabPage();
             this.resultsLayout = new System.Windows.Forms.TableLayoutPanel();
             this.resultsTableGroupBox = new System.Windows.Forms.GroupBox();
-            this.resultsTable = new System.Windows.Forms.DataGridView();
+            this.resultsGrid = new System.Windows.Forms.DataGridView();
             this.coordinateColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.temperatureColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.viscosityColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.temperaturePlot = new ScottPlot.FormsPlot();
-            this.viscosityPlot = new ScottPlot.FormsPlot();
             this.discreteResultsLayout = new System.Windows.Forms.TableLayoutPanel();
             this.qualityIndicatorsGroupBox = new System.Windows.Forms.GroupBox();
             this.qualityIndicatorsLayout = new System.Windows.Forms.TableLayoutPanel();
@@ -69,6 +68,7 @@
             this.programPerfomanceLayout = new System.Windows.Forms.TableLayoutPanel();
             this.programWorkTimeOutput = new RPK.InterfaceElements.ParameterOutput();
             this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
+            this.viscosityPlot = new ScottPlot.FormsPlot();
             this.tabPagesImageList = new System.Windows.Forms.ImageList(this.components);
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,7 +79,6 @@
             this.helpStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.backgroundInputControlsFiller = new System.ComponentModel.BackgroundWorker();
-            this.calculationBackgroundProcessor = new System.ComponentModel.BackgroundWorker();
             this.tabControl.SuspendLayout();
             this.inputParametersPage.SuspendLayout();
             this.inputParametersLayout.SuspendLayout();
@@ -95,7 +94,7 @@
             this.resultsPage.SuspendLayout();
             this.resultsLayout.SuspendLayout();
             this.resultsTableGroupBox.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.resultsTable)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultsGrid)).BeginInit();
             this.discreteResultsLayout.SuspendLayout();
             this.qualityIndicatorsGroupBox.SuspendLayout();
             this.qualityIndicatorsLayout.SuspendLayout();
@@ -354,8 +353,8 @@
             this.resultsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.resultsLayout.Controls.Add(this.resultsTableGroupBox, 0, 0);
             this.resultsLayout.Controls.Add(this.temperaturePlot, 1, 0);
-            this.resultsLayout.Controls.Add(this.viscosityPlot, 1, 1);
             this.resultsLayout.Controls.Add(this.discreteResultsLayout, 0, 1);
+            this.resultsLayout.Controls.Add(this.viscosityPlot, 1, 1);
             this.resultsLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resultsLayout.Location = new System.Drawing.Point(3, 3);
             this.resultsLayout.Name = "resultsLayout";
@@ -367,7 +366,7 @@
             // 
             // resultsTableGroupBox
             // 
-            this.resultsTableGroupBox.Controls.Add(this.resultsTable);
+            this.resultsTableGroupBox.Controls.Add(this.resultsGrid);
             this.resultsTableGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resultsTableGroupBox.Location = new System.Drawing.Point(3, 3);
             this.resultsTableGroupBox.Name = "resultsTableGroupBox";
@@ -376,25 +375,28 @@
             this.resultsTableGroupBox.TabStop = false;
             this.resultsTableGroupBox.Text = "Таблица результатов";
             // 
-            // resultsTable
+            // resultsGrid
             // 
-            this.resultsTable.AllowUserToAddRows = false;
-            this.resultsTable.AllowUserToDeleteRows = false;
-            this.resultsTable.AllowUserToOrderColumns = true;
-            this.resultsTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.resultsTable.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.resultsGrid.AllowUserToAddRows = false;
+            this.resultsGrid.AllowUserToDeleteRows = false;
+            this.resultsGrid.AllowUserToOrderColumns = true;
+            this.resultsGrid.AllowUserToResizeRows = false;
+            this.resultsGrid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.resultsGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.resultsGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.coordinateColumn,
             this.temperatureColumn,
             this.viscosityColumn});
-            this.resultsTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.resultsTable.Location = new System.Drawing.Point(3, 27);
-            this.resultsTable.Name = "resultsTable";
-            this.resultsTable.ReadOnly = true;
-            this.resultsTable.RowHeadersVisible = false;
-            this.resultsTable.RowHeadersWidth = 62;
-            this.resultsTable.RowTemplate.Height = 33;
-            this.resultsTable.Size = new System.Drawing.Size(676, 243);
-            this.resultsTable.TabIndex = 0;
+            this.resultsGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.resultsGrid.Location = new System.Drawing.Point(3, 27);
+            this.resultsGrid.Name = "resultsGrid";
+            this.resultsGrid.ReadOnly = true;
+            this.resultsGrid.RowHeadersVisible = false;
+            this.resultsGrid.RowHeadersWidth = 62;
+            this.resultsGrid.RowTemplate.Height = 33;
+            this.resultsGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
+            this.resultsGrid.Size = new System.Drawing.Size(676, 243);
+            this.resultsGrid.TabIndex = 0;
             // 
             // coordinateColumn
             // 
@@ -402,7 +404,6 @@
             this.coordinateColumn.MinimumWidth = 8;
             this.coordinateColumn.Name = "coordinateColumn";
             this.coordinateColumn.ReadOnly = true;
-            this.coordinateColumn.Width = 150;
             // 
             // temperatureColumn
             // 
@@ -410,7 +411,6 @@
             this.temperatureColumn.MinimumWidth = 8;
             this.temperatureColumn.Name = "temperatureColumn";
             this.temperatureColumn.ReadOnly = true;
-            this.temperatureColumn.Width = 150;
             // 
             // viscosityColumn
             // 
@@ -418,7 +418,6 @@
             this.viscosityColumn.MinimumWidth = 8;
             this.viscosityColumn.Name = "viscosityColumn";
             this.viscosityColumn.ReadOnly = true;
-            this.viscosityColumn.Width = 150;
             // 
             // temperaturePlot
             // 
@@ -428,15 +427,6 @@
             this.temperaturePlot.Name = "temperaturePlot";
             this.temperaturePlot.Size = new System.Drawing.Size(678, 267);
             this.temperaturePlot.TabIndex = 1;
-            // 
-            // viscosityPlot
-            // 
-            this.viscosityPlot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.viscosityPlot.Location = new System.Drawing.Point(693, 285);
-            this.viscosityPlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
-            this.viscosityPlot.Name = "viscosityPlot";
-            this.viscosityPlot.Size = new System.Drawing.Size(678, 268);
-            this.viscosityPlot.TabIndex = 2;
             // 
             // discreteResultsLayout
             // 
@@ -576,6 +566,15 @@
             this.programOccupiedRAMOutput.TabIndex = 1;
             this.programOccupiedRAMOutput.Value = null;
             // 
+            // viscosityPlot
+            // 
+            this.viscosityPlot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.viscosityPlot.Location = new System.Drawing.Point(693, 285);
+            this.viscosityPlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
+            this.viscosityPlot.Name = "viscosityPlot";
+            this.viscosityPlot.Size = new System.Drawing.Size(678, 268);
+            this.viscosityPlot.TabIndex = 4;
+            // 
             // tabPagesImageList
             // 
             this.tabPagesImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
@@ -649,14 +648,6 @@
             this.backgroundInputControlsFiller.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundInputControlsFiller_DoWork);
             this.backgroundInputControlsFiller.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundInputControlsFiller_RunWorkerCompleted);
             // 
-            // calculationBackgroundProcessor
-            // 
-            this.calculationBackgroundProcessor.WorkerReportsProgress = true;
-            this.calculationBackgroundProcessor.WorkerSupportsCancellation = true;
-            this.calculationBackgroundProcessor.DoWork += new System.ComponentModel.DoWorkEventHandler(this.CalculationBackgroundProcessor_DoWork);
-            this.calculationBackgroundProcessor.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.CalculationBackgroundProcessor_ProgressChanged);
-            this.calculationBackgroundProcessor.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.CalculationBackgroundProcessor_RunWorkerCompleted);
-            // 
             // ResearcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
@@ -682,7 +673,7 @@
             this.resultsPage.ResumeLayout(false);
             this.resultsLayout.ResumeLayout(false);
             this.resultsTableGroupBox.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.resultsTable)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultsGrid)).EndInit();
             this.discreteResultsLayout.ResumeLayout(false);
             this.qualityIndicatorsGroupBox.ResumeLayout(false);
             this.qualityIndicatorsLayout.ResumeLayout(false);
@@ -711,9 +702,8 @@
         private System.Windows.Forms.TableLayoutPanel solvingMethodParametersLayout;
         private System.Windows.Forms.TableLayoutPanel resultsLayout;
         private System.Windows.Forms.GroupBox resultsTableGroupBox;
-        private System.Windows.Forms.DataGridView resultsTable;
+        private System.Windows.Forms.DataGridView resultsGrid;
         private ScottPlot.FormsPlot temperaturePlot;
-        private ScottPlot.FormsPlot viscosityPlot;
         private System.Windows.Forms.TableLayoutPanel discreteResultsLayout;
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileStripMenuItem;
@@ -748,7 +738,7 @@
         private System.ComponentModel.BackgroundWorker backgroundInputControlsFiller;
         private InterfaceElements.CustomComboBox canalChooseComboBox;
         private InterfaceElements.CustomComboBox materialChooseComboBox;
-        private System.ComponentModel.BackgroundWorker calculationBackgroundProcessor;
+        private ScottPlot.FormsPlot viscosityPlot;
     }
 }
 
