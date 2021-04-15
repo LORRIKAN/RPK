@@ -2,6 +2,7 @@
 using RPK.InterfaceElements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,10 +12,6 @@ namespace RPK.View
     public class CalculationProcessor
     {
         public event CalculationFunc? CalculationFunc;
-
-        public event Action<CalculationResults?>? VisualizationFunc;
-
-        private Task? VisualizationTask { get; set; }
 
         private Task<CalculationResults?>? CalculationTask { get; set; }
 
@@ -32,7 +29,6 @@ namespace RPK.View
             CalculationProgressIndicator = 0;
             var calculationDialog = new CalculationDialog();
             calculationDialog.GetCalculationProgress += CalculationDialog_GetProgress;
-            calculationDialog.GetVisualizationIsFinished += CalculationDialog_GetVisualizationIsFinished;
 
             var cancelationTokenSource = new CancellationTokenSource();
             CancellationToken = cancelationTokenSource.Token;
@@ -49,11 +45,18 @@ namespace RPK.View
 
             CalculationTask = Task.Run(() =>
             {
+                CalculationResults? calculationResultsInner;
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 try
                 {
-                    return CalculationFunc?.Invoke(calculationParameters);
+                    calculationResultsInner = CalculationFunc?.Invoke(calculationParameters);
+                    calculationResultsInner!.CalculationTime = stopwatch.ElapsedMilliseconds;
                 }
-                catch { return null; }
+                catch { calculationResultsInner = null; }
+                stopwatch.Stop();
+
+                return calculationResultsInner;
             });
 
             TaskDialogResult taskDialogResult = calculationDialog.ShowCalculationDialog();
@@ -66,12 +69,6 @@ namespace RPK.View
 
             calculationResults = await CalculationTask;
 
-            VisualizationTask = Task.Run(() => VisualizationFunc?.Invoke(calculationResults));
-
-            taskDialogResult = calculationDialog.ShowVisualizationDialog();
-
-            await VisualizationTask;
-
             return (calculationResults, taskDialogResult);
         }
 
@@ -80,15 +77,6 @@ namespace RPK.View
             while (CalculationTask?.IsCompleted is false)
             {
                 yield return (int)CalculationProgressIndicator;
-
-                await Task.Delay(100, CancellationToken);
-            }
-        }
-        private async IAsyncEnumerable<bool> CalculationDialog_GetVisualizationIsFinished()
-        {
-            while (VisualizationTask?.IsCompleted is false)
-            {
-                yield return VisualizationTask.IsCompleted;
 
                 await Task.Delay(100, CancellationToken);
             }

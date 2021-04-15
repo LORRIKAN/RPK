@@ -34,15 +34,21 @@ namespace RPK.View
             temperaturePlot.plt.Title("График зависимости температуры материала от длины канала");
             temperaturePlot.plt.XLabel("Длина канала (м)");
             temperaturePlot.plt.YLabel("Температура материала (°C)");
+            temperaturePlot.Render();
 
             viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала");
             viscosityPlot.plt.XLabel("Длина канала (м)");
             viscosityPlot.plt.YLabel("Вязкость материала (Па⋅с)");
+            viscosityPlot.Render();
 
             canalChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
             materialChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
 
             calculateStripMenuItem.Click += CalculateStripMenuItem_Click;
+
+            VisualizationProcessor.ValuesOutputAsync += FillResultControlsAsync;
+            VisualizationProcessor.VisualizationStarted += OnVisualizationStarted;
+            VisualizationProcessor.VisualizationFinished += OnVisualizationFinished;
 
             InitializeMemoryOutput();
         }
@@ -59,7 +65,7 @@ namespace RPK.View
 
         private async Task OutputAllocatedMemory(CancellationToken outputMemoryCancellationToken)
         {
-            while (outputMemoryCancellationToken.IsCancellationRequested is false)
+            while (true)
             {
                 try
                 {
@@ -345,7 +351,7 @@ namespace RPK.View
         {
             tableLayoutPanel.Controls.Clear();
 
-            int parametersCount = parameterInputs.Count();
+            int parametersCount = parameterInputs.Count;
 
             float rowsSizeInPercent = 100 / parametersCount;
 
@@ -381,45 +387,33 @@ namespace RPK.View
             Incomplete
         }
 
+        private VisualizationProcessor VisualizationProcessor = new();
+
         private async void CalculateStripMenuItem_Click(object? sender, EventArgs e)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            SetEnabledOutputControls(false);
-            PrepareOutputControls();
+            VisualizationProcessor.CancelVisualization();
+            SetEnabledCertainControlsDueToVisualization(false);
 
             var calculationProcessor = new CalculationProcessor();
             calculationProcessor.CalculationFunc += CalculationRequired;
-            calculationProcessor.VisualizationFunc += FillResultControlsAsync;
 
-            (CalculationResults? calculationResults, TaskDialogResult taskDialogResult) = await 
+            (CalculationResults? calculationResults, TaskDialogResult taskDialogResult) = await
                 calculationProcessor.ProceedCalculationAsync(InputControlsAndParameters.Values);
 
             this.BringToFront();
 
-            SetEnabledOutputControls(true);
+            SetEnabledCertainControlsDueToVisualization(true);
 
-            if (calculationResults is null || taskDialogResult is TaskDialogResult.Cancel or TaskDialogResult.Close)
+            if (calculationResults is null || taskDialogResult is TaskDialogResult.Cancel)
                 return;
 
-            long calculationDuration = stopwatch.ElapsedMilliseconds;
+            if (taskDialogResult is TaskDialogResult.ShowResults)
+                tabControl.SelectedTab = resultsPage;
 
-            programWorkTimeOutput.Value = calculationDuration;
-
-            tabControl.SelectedTab = resultsPage;
+            await VisualizationProcessor.StartVisualization(calculationResults);
         }
 
-        private void SetEnabledOutputControls(bool enabled)
-        {
-            calculateStripMenuItem.Enabled = enabled;
-            fileStripMenuItem.Enabled = enabled;
-            foreach (TabPage tabPage in InputPagesStatuses.Keys)
-            {
-                tabPage.Enabled = enabled;
-            }
-        }
-
-        private void PrepareOutputControls()
+        private void OnVisualizationStarted(CalculationResults calculationResults)
         {
             IEnumerable<ParameterOutput> parameterOutputs = FindAllChildControls<ParameterOutput>(resultsPage.Controls);
 
@@ -430,80 +424,139 @@ namespace RPK.View
             viscosityPlot.plt.Clear();
 
             resultsGrid.Rows.Clear();
+
+            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала (в процессе визуализации)");
+            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала (в процессе визуализации)");
+
+            resultsTableGroupBox.Text = ("Таблица результатов (в процессе визуализации)");
         }
 
-        private async void FillResultControlsAsync(CalculationResults? calculationResults)
+        private void OnVisualizationFinished(CalculationResults calculationResults)
         {
-            if (calculationResults is null)
-                return;
-            IEnumerable<(double coordinate, double temperature, double viscosity)> results = calculationResults.Value.ResultsTable;
-            (double temperature, double viscosity) = calculationResults.Value.QualityIndicators;
-            double canalProductivity = calculationResults.Value.CanalProductivity;
+            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала (визуализация завершена)");
+            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала (визуализация завершена)");
 
-            int resultsCount = results.Count();
+            temperaturePlot.plt.AxisAuto();
+            viscosityPlot.plt.Axis();
 
-            var coordinates = new List<double>(resultsCount);
-            var temperatures = new List<double>(resultsCount);
-            var viscosities = new List<double>(resultsCount);
+            viscosityPlot.Render();
+            temperaturePlot.Render();
 
-            var gridRows = new List<DataGridViewRow>(resultsCount);
+            resultsTableGroupBox.Text = ("Таблица результатов (визуализация завершена)");
+        }
 
-            foreach ((double coordinate, double temperature, double viscosity) result in results)
+        private void SetEnabledCertainControlsDueToVisualization(bool enabled)
+        {
+            calculateStripMenuItem.Enabled = enabled;
+            fileStripMenuItem.Enabled = enabled;
+            foreach (TabPage tabPage in InputPagesStatuses.Keys)
             {
-                (double coordinate, double intermediateTemperature, double intermediateViscosity) = result;
+                tabPage.Enabled = enabled;
+            }
+        }
 
-                var gridRow = new DataGridViewRow();
+        private async Task FillResultControlsAsync(CalculationResults calculationResults, CancellationToken cancellationToken)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-                gridRow.CreateCells(resultsGrid, coordinate,
-                    $"{intermediateTemperature:0.00}", $"{intermediateViscosity:0.00}");
+            List<(double coordinate, double temperature, double viscosity)> results = calculationResults.ResultsTable;
+            (double temperature, double viscosity) = calculationResults.QualityIndicators;
+            productTemperatureOutput.Value = string.Format($"{temperature:0.00}");
+            productViscosityOutput.Value = string.Format($"{viscosity:0.00}");
+            canalProductivityOutput.Value = string.Format($"{calculationResults.CanalProductivity:0.00}");
 
-                gridRows.Add(gridRow);
+            double[] plotsCoordinates = new double[results.Count];
+            double[] plotTemperatures = new double[results.Count];
+            double[] plotViscosities = new double[results.Count];
 
-                coordinates.Add(coordinate);
-                temperatures.Add(intermediateTemperature);
-                viscosities.Add(intermediateViscosity);
+            temperaturePlot.plt.PlotScatter(plotsCoordinates, plotTemperatures);
+            viscosityPlot.plt.PlotScatter(plotsCoordinates, plotViscosities);
+
+            resultsGrid.SuspendLayout();
+
+            int GetCoordinatePrecision()
+            {
+                ParameterInput? stepInput = 
+                    InputControlsAndParameters.Keys.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
+
+                if (stepInput is null)
+                    return 0;
+
+                string step = stepInput.InputTextBox.Text;
+
+                return step.SkipWhile(sym => sym is (not '.' or ',')).Count(sym => sym is (not '.' or ','));
             }
 
-            temperaturePlot.plt.RenderLock();
-            viscosityPlot.plt.RenderLock();
+            int coordinatePrecision = GetCoordinatePrecision();
 
-            Task fillPlotsTask = Task.Run(() => 
+            long timeElapsed = calculationResults.CalculationTime;
+
+            Task visualizationTask = Task.Run(() =>
             {
-                temperaturePlot.plt.PlotScatter(coordinates.ToArray(), temperatures.ToArray());
-                viscosityPlot.plt.PlotScatter(coordinates.ToArray(), viscosities.ToArray());
-            });
+                try
+                {
+                    for (int i = 0; i < calculationResults.ResultsTable.Count; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
 
-            this.Invoke(new MethodInvoker(() =>
+                        (double coordinate, double intermediateTemperature, double intermediateViscosity) =
+                            results[i];
+
+                        plotsCoordinates[i] = coordinate;
+                        plotTemperatures[i] = intermediateTemperature;
+                        plotViscosities[i] = intermediateViscosity;
+
+                        this.Invoke(new MethodInvoker(() => 
+                            resultsGrid.Rows.Add(coordinate.ToString($"F{coordinatePrecision}"), string.Format($"{intermediateTemperature:0.00}"), 
+                            string.Format($"{intermediateViscosity:0.00}"))));
+
+                        timeElapsed += stopwatch.ElapsedMilliseconds;
+
+                        stopwatch.Restart();
+                    }
+                }
+                catch { return; }
+            }, cancellationToken);
+
+            while (visualizationTask.IsCompleted is false)
             {
-                canalProductivityOutput.Value = string.Format("{0:0.00}", canalProductivity);
+                try
+                {
+                    this.Invoke(new MethodInvoker(() =>
+                    {
+                        programWorkTimeOutput.Value = timeElapsed;
 
-                productTemperatureOutput.Value = string.Format("{0:0.00}", temperature);
-                productViscosityOutput.Value = string.Format("{0:0.00}", viscosity);
+                        temperaturePlot.plt.AxisAuto();
+                        temperaturePlot.Render();
 
-                resultsGrid.Rows.AddRange(gridRows.ToArray());
-
-                temperaturePlot.plt.PlotScatter(coordinates.ToArray(), temperatures.ToArray());
-                viscosityPlot.plt.PlotScatter(coordinates.ToArray(), viscosities.ToArray());
+                        viscosityPlot.plt.AxisAuto();
+                        viscosityPlot.Render();
+                    }));
+                    await Task.Delay(1000, cancellationToken);
+                }
+                catch { break; }
             }
-            ));
 
-            await fillPlotsTask;
+            await visualizationTask;
 
-            temperaturePlot.plt.RenderUnlock();
-            viscosityPlot.plt.RenderUnlock();
+            stopwatch.Stop();
         }
     }
 
-    public struct CalculationResults
+#nullable disable
+    public class CalculationResults
     {
         public List<(double coordinate, double tempreture, double viscosity)> ResultsTable { get; set; }
 
         public (double tempreture, double viscosity) QualityIndicators { get; set; }
 
         public double CanalProductivity { get; set; }
+
+        public long CalculationTime { get; set; }
     }
 
-    public struct CalculationParameters
+    public class CalculationParameters
     {
         public IEnumerable<Parameter> Parameters { get; set; }
 

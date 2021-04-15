@@ -10,19 +10,14 @@ namespace RPK.InterfaceElements
         public CalculationDialog()
         {
             InitializeCalculationInProgressPage();
-            InitializeVisualizationInProgressPage();
             InitializeFinishedPage();
         }
 
         public event Func<IAsyncEnumerable<int>> GetCalculationProgress;
 
-        public event Func<IAsyncEnumerable<bool>> GetVisualizationIsFinished;
-
         TaskDialogPage CalculationInProgressPage { get; set; }
 
         TaskDialogPage FinishedPage { get; set; }
-
-        TaskDialogPage VisualizationInProgressPage { get; set; }
 
         TaskDialogButton ShowResultsButton { get; set; } = new TaskDialogCommandLinkButton("Показать результаты");
 
@@ -76,36 +71,7 @@ namespace RPK.InterfaceElements
                     CalculationInProgressPage.Expander.Text = $"Процесс расчёта: {progress} %";
                 }
 
-                CalculationInProgressPage.BoundDialog.Close();
-            };
-        }
-
-        private void InitializeVisualizationInProgressPage()
-        {
-            VisualizationInProgressPage = new TaskDialogPage()
-            {
-                Caption = "Процесс визуализации",
-                Heading = "Визуализация в процессе...",
-                Text = "Пожалуйста подождите, пока идёт визуализация. Этот процесс нельзя отменить.",
-                Icon = TaskDialogIcon.Information,
-                AllowCancel = false,
-                AllowMinimize = false,
-
-                ProgressBar = new TaskDialogProgressBar()
-                {
-                    State = TaskDialogProgressBarState.Marquee
-                },
-
-                Buttons = { new TaskDialogButton() { Text = "Отмена", Enabled = false } }
-            };
-
-            VisualizationInProgressPage.Created += async (s, e) =>
-            {
-                await foreach (bool visualizationIsFinished in GetVisualizationIsFinished())
-                {
-                }
-
-                VisualizationInProgressPage.Navigate(FinishedPage);
+                try { CalculationInProgressPage.Navigate(FinishedPage); } catch { }
             };
         }
 
@@ -113,9 +79,9 @@ namespace RPK.InterfaceElements
         {
             FinishedPage = new TaskDialogPage()
             {
-                Caption = "Процессы расчёта и визуализации",
-                Heading = "Расчёт и визуализация завершены!",
-                Text = "Процессы расчёта и визуализации завершены.",
+                Caption = "Процесс расчёта",
+                Heading = "Расчёт завершен!",
+                Text = "Процесс расчёта завершён.",
                 Icon = TaskDialogIcon.ShieldSuccessGreenBar,
                 Buttons =
                 {
@@ -131,15 +97,7 @@ namespace RPK.InterfaceElements
 
             if (result == CancelButton)
                 return TaskDialogResult.Cancel;
-
-            return TaskDialogResult.Close;
-        }
-
-        public TaskDialogResult ShowVisualizationDialog()
-        {
-            TaskDialogButton result = TaskDialog.ShowDialog(VisualizationInProgressPage);
-
-            if (result == ShowResultsButton)
+            else if (result == ShowResultsButton)
                 return TaskDialogResult.ShowResults;
 
             return TaskDialogResult.Close;

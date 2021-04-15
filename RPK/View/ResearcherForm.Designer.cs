@@ -550,7 +550,7 @@
             this.programWorkTimeOutput.Location = new System.Drawing.Point(3, 3);
             this.programWorkTimeOutput.MeasureUnit = "мс";
             this.programWorkTimeOutput.Name = "programWorkTimeOutput";
-            this.programWorkTimeOutput.ParameterName = "Время расчётов";
+            this.programWorkTimeOutput.ParameterName = "Время расчётов и визуализации";
             this.programWorkTimeOutput.Size = new System.Drawing.Size(317, 65);
             this.programWorkTimeOutput.TabIndex = 0;
             this.programWorkTimeOutput.Value = null;

@@ -101,7 +101,10 @@ namespace RPK.Presenter
                 (intermediateResults.Count() + finalResults.Count() + stepsCount * iteratableResults.Count());
 
             foreach (ResultBase intermediateResult in intermediateResults)
-                await CalculateParameterAsync(intermediateResult);
+                try
+                {
+                    await CalculateParameterAsync(intermediateResult);
+                } catch { throw; }
 
             for (double z = 0; z <= L; z += step)
             {
@@ -120,7 +123,8 @@ namespace RPK.Presenter
             }
 
             foreach (ResultBase finalResult in finalResults)
-                await CalculateParameterAsync(finalResult);
+                try { await CalculateParameterAsync(finalResult); }
+                catch { throw; }
 
             calculationResults.CanalProductivity = Q;
             calculationResults.QualityIndicators = (T, N);
