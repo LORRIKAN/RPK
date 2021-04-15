@@ -82,10 +82,12 @@ namespace RPK.Presenter
 
         private CancellationToken CancellationToken { get; set; }
 
-        public void Calculate(ref CalculationParameters calculationParameters, out CalculationResults calculationResults)
+        public async Task<CalculationResults> CalculateAsync(CalculationParameters calculationParameters)
         {
-            calculationResults = new CalculationResults();
-            calculationResults.ResultsTable = ReturnIteratableResultsAsync();
+            var calculationResults = new CalculationResults
+            {
+                ResultsTable = new List<(double coordinate, double tempreture, double viscosity)>()
+            };
 
             ProgressIndicatorIncrementor = calculationParameters.ProgressIncrementor;
 
@@ -94,69 +96,58 @@ namespace RPK.Presenter
 
             int stepsCount = (int)(L / step);
 
-            calculationParameters.IteratableResultsCalculationsStepsCount = stepsCount;
-
-            ProgressIndicatorIncrement = 
-                (double)calculationParameters.ProgressMaxValueForCalculation / 
+            ProgressIndicatorIncrement =
+                (double)calculationParameters.ProgressMaxValueForCalculation /
                 (intermediateResults.Count() + finalResults.Count() + stepsCount * iteratableResults.Count());
 
             foreach (ResultBase intermediateResult in intermediateResults)
-                CalculateParameter(intermediateResult);
+                await CalculateParameterAsync(intermediateResult);
 
             for (double z = 0; z <= L; z += step)
             {
-                CalculateParameter(Ti, z);
-
-                CalculateParameter(Ni, z);
-            }
-
-            foreach (ResultBase finalResult in finalResults)
-                CalculateParameter(finalResult);
-
-            calculationResults.CanalProductivity = Q;
-            calculationResults.QualityIndicators = (T, N);
-        }
-
-        private async IAsyncEnumerable<(double coordinate, double temperature, double viscosity)> ReturnIteratableResultsAsync()
-        {
-            while (Ti.ValuesForAsyncGet.Count is 0 || Ni.ValuesForAsyncGet.Count is 0) { }
-
-            int stepsCount = (int)(L / step);
-
-            double loopPreviousValue = 0;
-
-            for (double i = 0; i <= L; i += step)
-            {
-                double temperature;
-                double viscosity;
                 try
                 {
-                    temperature = Ti.ValuesForAsyncGet[i];
-                    viscosity = Ni.ValuesForAsyncGet[i];
+                    await CalculateParameterAsync(Ti, z);
+
+                    await CalculateParameterAsync(Ni, z);
                 }
                 catch
                 {
-                    i = loopPreviousValue;
-                    continue;
+                    throw;
                 }
 
-                loopPreviousValue = i;
-                yield return await Task.Run(() => (i, temperature, viscosity));
+                calculationResults.ResultsTable.Add((z, Ti[z], Ni[z]));
             }
+
+            foreach (ResultBase finalResult in finalResults)
+                await CalculateParameterAsync(finalResult);
+
+            calculationResults.CanalProductivity = Q;
+            calculationResults.QualityIndicators = (T, N);
+
+            return calculationResults;
         }
 
-        private async void CalculateParameter(ResultBase interMediateResult)
+        private async Task CalculateParameterAsync(ResultBase interMediateResult)
         {
-            CancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            catch { throw; }
 
             interMediateResult.CalculateValue();
 
             await Task.Run(() => ProgressIndicatorIncrementor(ProgressIndicatorIncrement));
         }
 
-        private async void CalculateParameter(IteratableResultBase iteratableResult, object step)
+        private async Task CalculateParameterAsync(IteratableResultBase iteratableResult, object step)
         {
-            CancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            catch { throw; }
 
             iteratableResult.CalculateAndAddValue(step);
 
@@ -189,13 +180,13 @@ namespace RPK.Presenter
             Ti = new IteratableResult<double>(z => Tr + (1 / b) * Log(((b * qGamma + W * au) / (b * qAlpha)) * (1 - Exp(-(((double)z * b * qAlpha) / (p * c * Qch)))) +
                     Exp(b * (T0 - Tr - ((double)z * qAlpha) / (p * c * Qch)))));
 
-            Ni = new IteratableResult<double>(z => u0 * Exp(-b * (Ti.Values[z] - Tr)) * Pow(gamma, n - 1));
+            Ni = new IteratableResult<double>(z => u0 * Exp(-b * (Ti[z] - Tr)) * Pow(gamma, n - 1));
 
             Q = new FinalResult<double>(() => p * Qch);
 
-            T = new FinalResult<double>(() => Ti.Values.Values.Last());
+            T = new FinalResult<double>(() => Ti.Values.Last().Value);
 
-            N = new FinalResult<double>(() => Ni.Values.Values.Last());
+            N = new FinalResult<double>(() => Ni.Values.Last().Value);
 
             IEnumerable<ResultBase> intermediateResults = this.GetType().GetRuntimeProperties()
                 .Where(prop => prop.GetValue(this) is ResultBase and not FinalResultBase)
@@ -243,14 +234,14 @@ namespace RPK.Presenter
 
         class IteratableResult<ValueType> : IteratableResultBase
         {
+            public ValueType this[object step] { get => Values[step]; }
+
             public IteratableResult(Func<object, ValueType> calculationFunc)
             {
                 CalculationFunc = calculationFunc;
             }
 
             public Func<object, ValueType> CalculationFunc { get; set; }
-
-            public ConcurrentDictionary<object, ValueType> ValuesForAsyncGet { get; } = new();
 
             public Dictionary<object, ValueType> Values { get; } = new();
 
@@ -259,8 +250,6 @@ namespace RPK.Presenter
                 ValueType calculatedValue = CalculationFunc(step);
 
                 Values.Add(step, calculatedValue);
-
-                Task.Run(() => ValuesForAsyncGet.TryAdd(step, calculatedValue));
             }
         }
 

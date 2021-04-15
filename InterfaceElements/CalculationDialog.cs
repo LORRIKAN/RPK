@@ -9,32 +9,37 @@ namespace RPK.InterfaceElements
 
         public CalculationDialog()
         {
-            InitializeInProgressPage();
+            InitializeCalculationInProgressPage();
+            InitializeVisualizationInProgressPage();
             InitializeFinishedPage();
         }
 
-        public event Func<IAsyncEnumerable<(int progressPercent, string state)>> GetProgress;
+        public event Func<IAsyncEnumerable<int>> GetCalculationProgress;
 
-        TaskDialogPage InProgressPage { get; set; }
+        public event Func<IAsyncEnumerable<bool>> GetVisualizationIsFinished;
+
+        TaskDialogPage CalculationInProgressPage { get; set; }
 
         TaskDialogPage FinishedPage { get; set; }
+
+        TaskDialogPage VisualizationInProgressPage { get; set; }
 
         TaskDialogButton ShowResultsButton { get; set; } = new TaskDialogCommandLinkButton("Показать результаты");
 
         TaskDialogButton CancelButton { get; set; } = new TaskDialogButton("Отмена") { Enabled = false, AllowCloseDialog = true };
 
-        private void InitializeInProgressPage()
+        private void InitializeCalculationInProgressPage()
         {
-            InProgressPage = new TaskDialogPage()
+            CalculationInProgressPage = new TaskDialogPage()
             {
-                Caption = "Процессы расчёта и визуализации",
-                Heading = "Расчёт и визуализация в процессе...",
-                Text = "Пожалуйста подождите, пока идут расчёт и визуализация.",
+                Caption = "Процесс расчёта",
+                Heading = "Расчёт в процессе...",
+                Text = "Пожалуйста подождите, пока идёт расчёт.",
                 Icon = TaskDialogIcon.Information,
                 AllowCancel = false,
                 AllowMinimize = false,
 
-                Verification = new TaskDialogVerificationCheckBox() { Text = "Я действительно хочу отменить процессы расчёта и визуализации." },
+                Verification = new TaskDialogVerificationCheckBox() { Text = "Я действительно хочу отменить процесс расчёта." },
 
                 ProgressBar = new TaskDialogProgressBar()
                 {
@@ -52,35 +57,55 @@ namespace RPK.InterfaceElements
                 Buttons = { CancelButton },
             };
 
-            TaskDialogVerificationCheckBox checkBox = InProgressPage.Verification;
+            TaskDialogVerificationCheckBox checkBox = CalculationInProgressPage.Verification;
             checkBox.CheckedChanged += (sender, e) =>
             {
                 CancelButton.Enabled = checkBox.Checked;
             };
 
-            InProgressPage.Created += async (s, e) =>
+            CalculationInProgressPage.Created += async (s, e) =>
             {
-                // Run the background operation and iterate over the streamed values to update
-                // the progress. Because we call the async method from the GUI thread,
-                // it will use this thread's synchronization context to run the continuations,
-                // so we don't need to use Control.[Begin]Invoke() to schedule the callbacks.
-                var progressBar = InProgressPage.ProgressBar;
+                var progressBar = CalculationInProgressPage.ProgressBar;
 
-                await foreach ((int progressPercent, string status) progressValue in GetProgress())
+                await foreach (int progress in GetCalculationProgress())
                 {
-                    // When we display the first progress, switch the marquee progress bar
-                    // to a regular one.
-                    if (progressBar.State == TaskDialogProgressBarState.Marquee)
+                    if (progressBar.State is TaskDialogProgressBarState.Marquee)
                         progressBar.State = TaskDialogProgressBarState.Normal;
 
-                    (int progressPercent, string status) = progressValue;
-
-                    progressBar.Value = progressPercent;
-                    InProgressPage.Expander.Text = $"{status}: {progressPercent} %";
+                    progressBar.Value = progress;
+                    CalculationInProgressPage.Expander.Text = $"Процесс расчёта: {progress} %";
                 }
 
-                // Work is finished, so navigate to the third page.
-                InProgressPage.Navigate(FinishedPage);
+                CalculationInProgressPage.BoundDialog.Close();
+            };
+        }
+
+        private void InitializeVisualizationInProgressPage()
+        {
+            VisualizationInProgressPage = new TaskDialogPage()
+            {
+                Caption = "Процесс визуализации",
+                Heading = "Визуализация в процессе...",
+                Text = "Пожалуйста подождите, пока идёт визуализация. Этот процесс нельзя отменить.",
+                Icon = TaskDialogIcon.Information,
+                AllowCancel = false,
+                AllowMinimize = false,
+
+                ProgressBar = new TaskDialogProgressBar()
+                {
+                    State = TaskDialogProgressBarState.Marquee
+                },
+
+                Buttons = { new TaskDialogButton() { Text = "Отмена", Enabled = false } }
+            };
+
+            VisualizationInProgressPage.Created += async (s, e) =>
+            {
+                await foreach (bool visualizationIsFinished in GetVisualizationIsFinished())
+                {
+                }
+
+                VisualizationInProgressPage.Navigate(FinishedPage);
             };
         }
 
@@ -89,7 +114,7 @@ namespace RPK.InterfaceElements
             FinishedPage = new TaskDialogPage()
             {
                 Caption = "Процессы расчёта и визуализации",
-                Heading = "Расчёт и визуализация завершёны!",
+                Heading = "Расчёт и визуализация завершены!",
                 Text = "Процессы расчёта и визуализации завершены.",
                 Icon = TaskDialogIcon.ShieldSuccessGreenBar,
                 Buttons =
@@ -100,22 +125,31 @@ namespace RPK.InterfaceElements
             };
         }
 
-        public TaskDialogResult Show()
+        public TaskDialogResult ShowCalculationDialog()
         {
-            TaskDialogButton result = TaskDialog.ShowDialog(InProgressPage);
+            TaskDialogButton result = TaskDialog.ShowDialog(CalculationInProgressPage);
+
+            if (result == CancelButton)
+                return TaskDialogResult.Cancel;
+
+            return TaskDialogResult.Close;
+        }
+
+        public TaskDialogResult ShowVisualizationDialog()
+        {
+            TaskDialogButton result = TaskDialog.ShowDialog(VisualizationInProgressPage);
 
             if (result == ShowResultsButton)
                 return TaskDialogResult.ShowResults;
-            else if (result == CancelButton)
-                return TaskDialogResult.Canceled;
-            return TaskDialogResult.Closed;
+
+            return TaskDialogResult.Close;
         }
     }
 
     public enum TaskDialogResult
     {
         ShowResults,
-        Canceled,
-        Closed
+        Cancel,
+        Close
     }
 }

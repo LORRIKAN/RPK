@@ -3,8 +3,10 @@ using RPK.Repository;
 using RPK.View;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RPK.Presenter
@@ -28,14 +30,27 @@ namespace RPK.Presenter
             ResearcherForm = researcherForm;
             ResearcherForm.SetVariableParameters += ResearcherForm_SetVariableParameters;
             ResearcherForm.SetSolvingParameters += ResearcherForm_SetSolvingParameters;
-            ResearcherForm.CalculationRequired += ResearcherForm_CalculationRequired;
+            ResearcherForm.CalculationRequired += (calculationParameters) => 
+                ResearcherForm_CalculationRequiredAsync(calculationParameters).Result;
+            ResearcherForm.SetAllocatedMemory += ResearcherForm_SetAllocatedMemory;
         }
 
-        private void ResearcherForm_CalculationRequired(ref CalculationParameters calculationParameters, out CalculationResults calculationResults)
+        private long ResearcherForm_SetAllocatedMemory()
+        {
+            // 1. Obtain the current application process
+            Process currentProcess = Process.GetCurrentProcess();
+
+            // 2. Obtain the used memory by the process
+            long usedMemory = currentProcess.PrivateMemorySize64;
+
+            return usedMemory;
+        }
+
+        private async Task<CalculationResults> ResearcherForm_CalculationRequiredAsync(CalculationParameters calculationParameters)
         {
             Parameters = calculationParameters.Parameters;
 
-            MathModel.Calculate(ref calculationParameters, out calculationResults);
+            return await MathModel.CalculateAsync(calculationParameters);
         }
 
         private void MathModel_SetParametersValues(IEnumerable<View.Parameter> parametersToSetValues)
