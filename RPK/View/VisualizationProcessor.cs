@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,34 +10,35 @@ namespace RPK.View
 {
     public class VisualizationProcessor
     {
-        public event Func<CalculationResults, CancellationToken, Task> ValuesOutputAsync;
+        public event Func<CalculationResults, CancellationToken, Task>? ValuesOutputAsync;
 
-        public event Action<CalculationResults> VisualizationStarted;
+        public event Action<CalculationResults>? VisualizationStarted;
 
-        public event Action<CalculationResults> VisualizationFinished;
+        public event Action<CalculationResults>? VisualizationFinished;
 
-        private CancellationTokenSource CancellationTokenSource { get; set; }
+        private CancellationTokenSource? CancellationTokenSource { get; set; }
 
-        private Task VisualizationTask { get; set; }
+        private Task? VisualizationTask { get; set; }
 
         public async Task StartVisualization(CalculationResults calculationResults)
         {
             CancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = CancellationTokenSource.Token;
 
-            VisualizationStarted(calculationResults);
+            VisualizationStarted?.Invoke(calculationResults);
 
             try
             {
-                VisualizationTask = ValuesOutputAsync(calculationResults, cancellationToken);
-                await VisualizationTask;
+                VisualizationTask = ValuesOutputAsync?.Invoke(calculationResults, cancellationToken);
+                if (VisualizationTask is not null)
+                    await VisualizationTask;
             }
             catch
             {
                 return;
             }
 
-            VisualizationFinished(calculationResults);
+            VisualizationFinished?.Invoke(calculationResults);
         }
 
         public async void CancelVisualization()

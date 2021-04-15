@@ -1,10 +1,21 @@
 using RPK.Presenter;
 using RPK.Repository;
 using RPK.View;
+using System;
 using System.Windows.Forms;
 
-Application.SetHighDpiMode(HighDpiMode.SystemAware);
-Application.EnableVisualStyles();
-Application.SetCompatibleTextRenderingDefault(false);
+namespace RPK
+{
+    class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
-new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext(), new MathModel()).Run();
+            Application.Run(new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext(), new MathModel()).Run());
+        }
+    }
+}

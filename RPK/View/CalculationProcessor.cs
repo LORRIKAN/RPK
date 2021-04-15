@@ -78,7 +78,7 @@ namespace RPK.View
             {
                 yield return (int)CalculationProgressIndicator;
 
-                await Task.Delay(100, CancellationToken);
+                await Task.Delay(100);
             }
         }
     }

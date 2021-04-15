@@ -86,11 +86,10 @@ namespace RPK.Presenter
                     variableParameter.CanalId == canal.CanalId);
         }
 
-        [STAThread]
-        public void Run()
+        public Form Run()
         {
             ResearcherForm.SetInitialData(Repository.Canals, Repository.Materials);
-            Application.Run(ResearcherForm);
+            return ResearcherForm;
         }
     }
 }

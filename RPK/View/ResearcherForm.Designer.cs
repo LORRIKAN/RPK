@@ -56,7 +56,6 @@
             this.coordinateColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.temperatureColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.viscosityColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.temperaturePlot = new ScottPlot.FormsPlot();
             this.discreteResultsLayout = new System.Windows.Forms.TableLayoutPanel();
             this.qualityIndicatorsGroupBox = new System.Windows.Forms.GroupBox();
             this.qualityIndicatorsLayout = new System.Windows.Forms.TableLayoutPanel();
@@ -68,7 +67,9 @@
             this.programPerfomanceLayout = new System.Windows.Forms.TableLayoutPanel();
             this.programWorkTimeOutput = new RPK.InterfaceElements.ParameterOutput();
             this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.viscosityPlot = new ScottPlot.FormsPlot();
+            this.temperaturePlotGroupBox = new System.Windows.Forms.GroupBox();
+            this.temperaturePlot = new ScottPlot.FormsPlot();
+            this.viscosityPlotGroupBox = new System.Windows.Forms.GroupBox();
             this.tabPagesImageList = new System.Windows.Forms.ImageList(this.components);
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,6 +80,7 @@
             this.helpStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.backgroundInputControlsFiller = new System.ComponentModel.BackgroundWorker();
+            this.viscosityPlot = new ScottPlot.FormsPlot();
             this.tabControl.SuspendLayout();
             this.inputParametersPage.SuspendLayout();
             this.inputParametersLayout.SuspendLayout();
@@ -101,6 +103,8 @@
             this.productivityAndPerfomanceLayout.SuspendLayout();
             this.programPerfomanceGroupBox.SuspendLayout();
             this.programPerfomanceLayout.SuspendLayout();
+            this.temperaturePlotGroupBox.SuspendLayout();
+            this.viscosityPlotGroupBox.SuspendLayout();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
             this.SuspendLayout();
@@ -352,9 +356,9 @@
             this.resultsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.resultsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.resultsLayout.Controls.Add(this.resultsTableGroupBox, 0, 0);
-            this.resultsLayout.Controls.Add(this.temperaturePlot, 1, 0);
             this.resultsLayout.Controls.Add(this.discreteResultsLayout, 0, 1);
-            this.resultsLayout.Controls.Add(this.viscosityPlot, 1, 1);
+            this.resultsLayout.Controls.Add(this.temperaturePlotGroupBox, 1, 0);
+            this.resultsLayout.Controls.Add(this.viscosityPlotGroupBox, 1, 1);
             this.resultsLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resultsLayout.Location = new System.Drawing.Point(3, 3);
             this.resultsLayout.Name = "resultsLayout";
@@ -418,15 +422,6 @@
             this.viscosityColumn.MinimumWidth = 8;
             this.viscosityColumn.Name = "viscosityColumn";
             this.viscosityColumn.ReadOnly = true;
-            // 
-            // temperaturePlot
-            // 
-            this.temperaturePlot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.temperaturePlot.Location = new System.Drawing.Point(693, 6);
-            this.temperaturePlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
-            this.temperaturePlot.Name = "temperaturePlot";
-            this.temperaturePlot.Size = new System.Drawing.Size(678, 267);
-            this.temperaturePlot.TabIndex = 1;
             // 
             // discreteResultsLayout
             // 
@@ -566,14 +561,36 @@
             this.programOccupiedRAMOutput.TabIndex = 1;
             this.programOccupiedRAMOutput.Value = null;
             // 
-            // viscosityPlot
+            // temperaturePlotGroupBox
             // 
-            this.viscosityPlot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.viscosityPlot.Location = new System.Drawing.Point(693, 285);
-            this.viscosityPlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
-            this.viscosityPlot.Name = "viscosityPlot";
-            this.viscosityPlot.Size = new System.Drawing.Size(678, 268);
-            this.viscosityPlot.TabIndex = 4;
+            this.temperaturePlotGroupBox.Controls.Add(this.temperaturePlot);
+            this.temperaturePlotGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.temperaturePlotGroupBox.Location = new System.Drawing.Point(691, 3);
+            this.temperaturePlotGroupBox.Name = "temperaturePlotGroupBox";
+            this.temperaturePlotGroupBox.Size = new System.Drawing.Size(682, 273);
+            this.temperaturePlotGroupBox.TabIndex = 5;
+            this.temperaturePlotGroupBox.TabStop = false;
+            // 
+            // temperaturePlot
+            // 
+            this.temperaturePlot.BackColor = System.Drawing.Color.Transparent;
+            this.temperaturePlot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.temperaturePlot.Location = new System.Drawing.Point(3, 27);
+            this.temperaturePlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
+            this.temperaturePlot.Name = "temperaturePlot";
+            this.temperaturePlot.Size = new System.Drawing.Size(676, 243);
+            this.temperaturePlot.TabIndex = 0;
+            this.temperaturePlot.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Plot_MouseMove);
+            // 
+            // viscosityPlotGroupBox
+            // 
+            this.viscosityPlotGroupBox.Controls.Add(this.viscosityPlot);
+            this.viscosityPlotGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.viscosityPlotGroupBox.Location = new System.Drawing.Point(691, 282);
+            this.viscosityPlotGroupBox.Name = "viscosityPlotGroupBox";
+            this.viscosityPlotGroupBox.Size = new System.Drawing.Size(682, 274);
+            this.viscosityPlotGroupBox.TabIndex = 6;
+            this.viscosityPlotGroupBox.TabStop = false;
             // 
             // tabPagesImageList
             // 
@@ -648,6 +665,17 @@
             this.backgroundInputControlsFiller.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundInputControlsFiller_DoWork);
             this.backgroundInputControlsFiller.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundInputControlsFiller_RunWorkerCompleted);
             // 
+            // viscosityPlot
+            // 
+            this.viscosityPlot.BackColor = System.Drawing.Color.Transparent;
+            this.viscosityPlot.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.viscosityPlot.Location = new System.Drawing.Point(3, 27);
+            this.viscosityPlot.Margin = new System.Windows.Forms.Padding(5, 6, 5, 6);
+            this.viscosityPlot.Name = "viscosityPlot";
+            this.viscosityPlot.Size = new System.Drawing.Size(676, 244);
+            this.viscosityPlot.TabIndex = 0;
+            this.viscosityPlot.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Plot_MouseMove);
+            // 
             // ResearcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
@@ -680,6 +708,8 @@
             this.productivityAndPerfomanceLayout.ResumeLayout(false);
             this.programPerfomanceGroupBox.ResumeLayout(false);
             this.programPerfomanceLayout.ResumeLayout(false);
+            this.temperaturePlotGroupBox.ResumeLayout(false);
+            this.viscosityPlotGroupBox.ResumeLayout(false);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
@@ -703,7 +733,6 @@
         private System.Windows.Forms.TableLayoutPanel resultsLayout;
         private System.Windows.Forms.GroupBox resultsTableGroupBox;
         private System.Windows.Forms.DataGridView resultsGrid;
-        private ScottPlot.FormsPlot temperaturePlot;
         private System.Windows.Forms.TableLayoutPanel discreteResultsLayout;
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileStripMenuItem;
@@ -738,6 +767,9 @@
         private System.ComponentModel.BackgroundWorker backgroundInputControlsFiller;
         private InterfaceElements.CustomComboBox canalChooseComboBox;
         private InterfaceElements.CustomComboBox materialChooseComboBox;
+        private System.Windows.Forms.GroupBox temperaturePlotGroupBox;
+        private ScottPlot.FormsPlot temperaturePlot;
+        private System.Windows.Forms.GroupBox viscosityPlotGroupBox;
         private ScottPlot.FormsPlot viscosityPlot;
     }
 }

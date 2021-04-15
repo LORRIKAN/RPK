@@ -1,10 +1,13 @@
 ﻿#nullable enable
 using RPK.InterfaceElements;
 using RPK.Model;
+using ScottPlot;
+using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,14 +34,14 @@ namespace RPK.View
             InputPagesStatuses.Add(variableParametersPage, TabPageStatus.Incomplete);
             InputPagesStatuses.Add(mathModelParametersPage, TabPageStatus.Incomplete);
 
-            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала");
-            temperaturePlot.plt.XLabel("Длина канала (м)");
-            temperaturePlot.plt.YLabel("Температура материала (°C)");
+            temperaturePlot.Plot.Title("График зависимости температуры материала от длины канала");
+            temperaturePlot.Plot.XLabel("Длина канала (м)");
+            temperaturePlot.Plot.YLabel("Температура материала (°C)");
             temperaturePlot.Render();
 
-            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала");
-            viscosityPlot.plt.XLabel("Длина канала (м)");
-            viscosityPlot.plt.YLabel("Вязкость материала (Па⋅с)");
+            viscosityPlot.Plot.Title("График зависимости вязкости материала от длины канала");
+            viscosityPlot.Plot.XLabel("Длина канала (м)");
+            viscosityPlot.Plot.YLabel("Вязкость материала (Па⋅с)");
             viscosityPlot.Render();
 
             canalChooseComboBox.NewIndexSelected += ComboBox_NewIndexSelected;
@@ -46,37 +49,38 @@ namespace RPK.View
 
             calculateStripMenuItem.Click += CalculateStripMenuItem_Click;
 
-            VisualizationProcessor.ValuesOutputAsync += FillResultControlsAsync;
             VisualizationProcessor.VisualizationStarted += OnVisualizationStarted;
+            VisualizationProcessor.ValuesOutputAsync += FillResultControlsAsync;
             VisualizationProcessor.VisualizationFinished += OnVisualizationFinished;
 
             InitializeMemoryOutput();
         }
 
-        private async void InitializeMemoryOutput()
+        private void InitializeMemoryOutput()
         {
             var cancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = cancellationTokenSource.Token;
 
             this.FormClosing += (sender, e) => cancellationTokenSource.Cancel();
 
-            await OutputAllocatedMemory(cancellationToken);
+            OutputAllocatedMemory(cancellationToken);
         }
 
-        private async Task OutputAllocatedMemory(CancellationToken outputMemoryCancellationToken)
+        private async void OutputAllocatedMemory(CancellationToken outputMemoryCancellationToken)
         {
             while (true)
             {
                 try
                 {
                     await Task.Delay(500, outputMemoryCancellationToken);
-                }
-                catch { return; }
 
-                this.Invoke(new MethodInvoker(() =>
-                {
-                    programOccupiedRAMOutput.Value = SetAllocatedMemory?.Invoke() / (1024 * 1024);
-                }));
+                    this.Invoke(new MethodInvoker(() =>
+                    {
+                        programOccupiedRAMOutput.Value = SetAllocatedMemory?.Invoke() / (1024 * 1024);
+                    }));
+                }
+                catch (TaskCanceledException) { return; }
+                catch { continue; }
             }
         }
 
@@ -249,29 +253,32 @@ namespace RPK.View
 
         private void BackgroundInputControlsFiller_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (e.Result is not Dictionary<TableLayoutPanel, IEnumerable<Parameter>> controlsToAdd)
-                return;
-
-            foreach (KeyValuePair<TableLayoutPanel, IEnumerable<Parameter>> tabControlsAndParameters in controlsToAdd)
+            this.Invoke(new MethodInvoker(() =>
             {
-                TableLayoutPanel tableLayoutPanel = tabControlsAndParameters.Key;
+                if (e.Result is not Dictionary<TableLayoutPanel, IEnumerable<Parameter>> controlsToAdd)
+                    return;
 
-                var parametersAndInputs = new Dictionary<ParameterInput, Parameter>();
+                foreach (KeyValuePair<TableLayoutPanel, IEnumerable<Parameter>> tabControlsAndParameters in controlsToAdd)
+                {
+                    TableLayoutPanel tableLayoutPanel = tabControlsAndParameters.Key;
 
-                foreach (Parameter parameter in tabControlsAndParameters.Value)
-                    parametersAndInputs.Add(GetInputControl(parameter), parameter);
+                    var parametersAndInputs = new Dictionary<ParameterInput, Parameter>();
 
-                FillLayoutWithInputParameters(tableLayoutPanel, parametersAndInputs);
-            }
+                    foreach (Parameter parameter in tabControlsAndParameters.Value)
+                        parametersAndInputs.Add(GetInputControl(parameter), parameter);
 
-            foreach (TabPage tabPage in InputPagesStatuses.Keys)
-                ChangeTabPageStatus(tabPage);
+                    FillLayoutWithInputParameters(tableLayoutPanel, parametersAndInputs);
+                }
 
-            if (InputControlsFillerAwaiters.Any())
-            {
-                (ComboBox comboBox, EventArgs cE) = InputControlsFillerAwaiters.Dequeue();
-                ComboBox_NewIndexSelected(comboBox, cE);
-            }
+                foreach (TabPage tabPage in InputPagesStatuses.Keys)
+                    ChangeTabPageStatus(tabPage);
+
+                if (InputControlsFillerAwaiters.Any())
+                {
+                    (ComboBox comboBox, EventArgs cE) = InputControlsFillerAwaiters.Dequeue();
+                    ComboBox_NewIndexSelected(comboBox, cE);
+                }
+            }));
         }
 
         private void ChangeTabPageStatus(TabPage tabPage)
@@ -392,6 +399,7 @@ namespace RPK.View
         private async void CalculateStripMenuItem_Click(object? sender, EventArgs e)
         {
             VisualizationProcessor.CancelVisualization();
+            PrepareOutputControls();
             SetEnabledCertainControlsDueToVisualization(false);
 
             var calculationProcessor = new CalculationProcessor();
@@ -413,36 +421,52 @@ namespace RPK.View
             await VisualizationProcessor.StartVisualization(calculationResults);
         }
 
-        private void OnVisualizationStarted(CalculationResults calculationResults)
+        private void PrepareOutputControls()
         {
             IEnumerable<ParameterOutput> parameterOutputs = FindAllChildControls<ParameterOutput>(resultsPage.Controls);
 
             foreach (ParameterOutput parameterOutput in parameterOutputs)
                 parameterOutput.Value = null;
 
-            temperaturePlot.plt.Clear();
-            viscosityPlot.plt.Clear();
+            temperaturePlot.Enabled = false;
+            viscosityPlot.Enabled = false;
+
+            temperaturePlot.Plot.Clear();
+            viscosityPlot.Plot.Clear();
+
+            temperaturePlotGroupBox.Text = string.Empty;
+            viscosityPlotGroupBox.Text = string.Empty;
+
+            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала");
+            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала");
 
             resultsGrid.Rows.Clear();
+            resultsTableGroupBox.Text = ($"Таблица результатов");
+        }
 
-            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала (в процессе визуализации)");
-            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала (в процессе визуализации)");
+        private void OnVisualizationStarted(CalculationResults obj)
+        {
+            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(в процессе визуализации)");
+            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(в процессе визуализации)");
 
-            resultsTableGroupBox.Text = ("Таблица результатов (в процессе визуализации)");
+            resultsTableGroupBox.Text = ($"Таблица результатов (в процессе визуализации)");
         }
 
         private void OnVisualizationFinished(CalculationResults calculationResults)
         {
-            temperaturePlot.plt.Title("График зависимости температуры материала от длины канала (визуализация завершена)");
-            viscosityPlot.plt.Title("График зависимости вязкости материала от длины канала (визуализация завершена)");
+            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(визуализация завершена)");
+            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(визуализация завершена)");
 
-            temperaturePlot.plt.AxisAuto();
-            viscosityPlot.plt.Axis();
+            temperaturePlot.Plot.AxisAuto();
+            viscosityPlot.Plot.AxisAuto();
 
             viscosityPlot.Render();
             temperaturePlot.Render();
 
-            resultsTableGroupBox.Text = ("Таблица результатов (визуализация завершена)");
+            viscosityPlot.Enabled = true;
+            temperaturePlot.Enabled = true;
+
+            resultsTableGroupBox.Text = ($"Таблица результатов (визуализация завершена)");
         }
 
         private void SetEnabledCertainControlsDueToVisualization(bool enabled)
@@ -453,6 +477,19 @@ namespace RPK.View
             {
                 tabPage.Enabled = enabled;
             }
+        }
+
+        private int GetCoordinatePrecision()
+        {
+            ParameterInput? stepInput =
+                InputControlsAndParameters.Keys.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
+
+            if (stepInput is null)
+                return 0;
+
+            string step = stepInput.InputTextBox.Text;
+
+            return step.SkipWhile(sym => sym is (not '.' or ',')).Count(sym => sym is (not '.' or ','));
         }
 
         private async Task FillResultControlsAsync(CalculationResults calculationResults, CancellationToken cancellationToken)
@@ -470,23 +507,8 @@ namespace RPK.View
             double[] plotTemperatures = new double[results.Count];
             double[] plotViscosities = new double[results.Count];
 
-            temperaturePlot.plt.PlotScatter(plotsCoordinates, plotTemperatures);
-            viscosityPlot.plt.PlotScatter(plotsCoordinates, plotViscosities);
-
-            resultsGrid.SuspendLayout();
-
-            int GetCoordinatePrecision()
-            {
-                ParameterInput? stepInput = 
-                    InputControlsAndParameters.Keys.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
-
-                if (stepInput is null)
-                    return 0;
-
-                string step = stepInput.InputTextBox.Text;
-
-                return step.SkipWhile(sym => sym is (not '.' or ',')).Count(sym => sym is (not '.' or ','));
-            }
+            temperaturePlot.Plot.AddSignal(plotTemperatures, (results.Count - 1) / results.Last().coordinate);
+            viscosityPlot.Plot.AddSignal(plotViscosities, (results.Count - 1) / results.Last().coordinate);
 
             int coordinatePrecision = GetCoordinatePrecision();
 
@@ -496,7 +518,7 @@ namespace RPK.View
             {
                 try
                 {
-                    for (int i = 0; i < calculationResults.ResultsTable.Count; i++)
+                    for (int i = 0; i < results.Count; i++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
@@ -527,10 +549,10 @@ namespace RPK.View
                     {
                         programWorkTimeOutput.Value = timeElapsed;
 
-                        temperaturePlot.plt.AxisAuto();
+                        temperaturePlot.Plot.AxisAuto();
                         temperaturePlot.Render();
 
-                        viscosityPlot.plt.AxisAuto();
+                        viscosityPlot.Plot.AxisAuto();
                         viscosityPlot.Render();
                     }));
                     await Task.Delay(1000, cancellationToken);
@@ -541,6 +563,29 @@ namespace RPK.View
             await visualizationTask;
 
             stopwatch.Stop();
+        }
+
+        private void Plot_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is not FormsPlot formsPlot || (formsPlot.Plot.GetPlottables().ElementAt(0) as SignalPlot) is null)
+                return;
+
+            // determine point nearest the cursor
+            (double mouseCoordX, _) = formsPlot.GetMouseCoordinates();
+            (double pointX, double pointY, int pointIndex) = ((SignalPlot)formsPlot.Plot.GetPlottables().ElementAt(0))
+                .GetPointNearestX(mouseCoordX);
+
+            // place the highlight over the point of interest
+            int coordinatePrecision = GetCoordinatePrecision();
+
+            if (formsPlot == temperaturePlot)
+            {
+                temperaturePlotGroupBox.Text = $"Курсор на X:{pointX.ToString($"F{coordinatePrecision}")} Y:{pointY:0.00}";
+            }
+            else if (formsPlot == viscosityPlot)
+            {
+                viscosityPlotGroupBox.Text = $"Курсор на X:{pointX.ToString($"F{coordinatePrecision}")} Y:{pointY:0.00}";
+            }
         }
     }
 
