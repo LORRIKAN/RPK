@@ -15,7 +15,8 @@ namespace RPK
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Application.Run(new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext(), new MathModel()).Run());
+            Application.Run(new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext(), new MathModel(),
+                new FileExportService()).Run());
         }
     }
 }

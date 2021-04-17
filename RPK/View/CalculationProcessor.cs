@@ -43,14 +43,14 @@ namespace RPK.View
                 ProgressMaxValueForCalculation = 100
             };
 
-            CalculationTask = Task.Run(() =>
+            CalculationTask = Task.Run(async () =>
             {
                 CalculationResults? calculationResultsInner;
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
                 try
                 {
-                    calculationResultsInner = CalculationFunc?.Invoke(calculationParameters);
+                    calculationResultsInner = await CalculationFunc!.Invoke(calculationParameters);
                     calculationResultsInner!.CalculationTime = stopwatch.ElapsedMilliseconds;
                 }
                 catch { calculationResultsInner = null; }

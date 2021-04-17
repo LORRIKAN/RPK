@@ -15,7 +15,7 @@ using System.Windows.Forms;
 
 namespace RPK.View
 {
-    public delegate CalculationResults CalculationFunc(CalculationParameters calculationParameters);
+    public delegate Task<CalculationResults> CalculationFunc(CalculationParameters calculationParameters);
 
     public partial class ResearcherForm : Form
     {
@@ -35,12 +35,12 @@ namespace RPK.View
             InputPagesStatuses.Add(mathModelParametersPage, TabPageStatus.Incomplete);
 
             temperaturePlot.Plot.Title("График зависимости температуры материала от длины канала");
-            temperaturePlot.Plot.XLabel("Длина канала (м)");
+            temperaturePlot.Plot.XLabel("Координата по длине канала (м)");
             temperaturePlot.Plot.YLabel("Температура материала (°C)");
             temperaturePlot.Render();
 
             viscosityPlot.Plot.Title("График зависимости вязкости материала от длины канала");
-            viscosityPlot.Plot.XLabel("Длина канала (м)");
+            viscosityPlot.Plot.XLabel("Координата по длине канала (м)");
             viscosityPlot.Plot.YLabel("Вязкость материала (Па⋅с)");
             viscosityPlot.Render();
 
@@ -53,7 +53,96 @@ namespace RPK.View
             VisualizationProcessor.ValuesOutputAsync += FillResultControlsAsync;
             VisualizationProcessor.VisualizationFinished += OnVisualizationFinished;
 
+            exportResultsStripMenuItem.Click += ExportResultsStripMenuItem_Click;
+
             InitializeMemoryOutput();
+        }
+
+        private async void ExportResultsStripMenuItem_Click(object? sender, EventArgs e)
+        {
+            exportResultsStripMenuItem.Enabled = false;
+            calculateStripMenuItem.Enabled = false;
+
+            if (saveFileDialog.ShowDialog() is not DialogResult.OK || DataToExport is null || LastCalculatedResults is null)
+                return;
+
+            string filePath = saveFileDialog.FileName;
+
+            await Task.Run(() =>
+            {
+                temperaturePlot.Plot.Legend(false);
+                viscosityPlot.Plot.Legend(false);
+
+                TemperatureHLine.IsVisible = false;
+                TemperatureVLine.IsVisible = false;
+
+                ViscosityHLine.IsVisible = false;
+                ViscosityVLine.IsVisible = false;
+
+                temperaturePlot.Plot.Style(Style.Light1);
+                viscosityPlot.Plot.Style(Style.Light1);
+
+                temperaturePlot.Plot.Title("График зависимости температуры материала от длины канала");
+                viscosityPlot.Plot.Title("График зависимости вязкости материала от длины канала");
+
+                DataToExport.TemperaturePlot = temperaturePlot.Plot.Render();
+                DataToExport.ViscosityPlot = viscosityPlot.Plot.Render();
+
+                temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(визуализация завершена)");
+                viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(визуализация завершена)");
+
+                temperaturePlot.Plot.Legend(true);
+                viscosityPlot.Plot.Legend(true);
+
+                TemperatureHLine.IsVisible = true;
+                TemperatureVLine.IsVisible = true;
+
+                ViscosityHLine.IsVisible = true;
+                ViscosityVLine.IsVisible = true;
+
+                temperaturePlot.Render();
+                viscosityPlot.Render();
+
+                var discreteOutputParameters = new Dictionary<string, IList<Parameter>>();
+
+                discreteOutputParameters.Add("Производительность канала", new[] { new Parameter(null, 
+                    canalProductivityOutput.ParameterName, string.Empty,
+                    canalProductivityOutput.MeasureUnit ?? string.Empty,
+                    canalProductivityOutput.Value)});
+
+                discreteOutputParameters.Add("Показатели качества",
+                    FindAllChildControls<ParameterOutput>(qualityIndicatorsGroupBox.Controls)
+                        .Select(po => new Parameter(null, po.ParameterName, string.Empty, po.MeasureUnit ?? string.Empty, 
+                            po.Value)).ToList());
+
+                DataToExport.DiscreteOutputParameters = discreteOutputParameters;
+
+                DataToExport.ContiniousResults = LastCalculatedResults.ResultsTable
+                    .Select(t => (new Parameter(null, "Координата по длине канала", string.Empty, "м", t.coordinate),
+                        new Parameter(null, "Температура", string.Empty, "°C", t.tempreture),
+                        new Parameter(null, "Вязкость", string.Empty, "Па⋅c", t.viscosity))).ToArray();
+            });
+
+            var exportDialog = new ExportDialog();
+            exportDialog.GetExportStatusAsync += async () =>
+            {
+                bool success;
+                try
+                {
+                    success = await ExportToFileAsync!.Invoke(DataToExport, filePath);
+                } catch { success = false; }
+
+                if (success is true)
+                    return ExportStatus.FinishedSuccessfully;
+
+                else
+                    return ExportStatus.FinishedWithError;
+            };
+
+            exportDialog.Show();
+
+            exportResultsStripMenuItem.Enabled = true;
+            calculateStripMenuItem.Enabled = true;
         }
 
         private void InitializeMemoryOutput()
@@ -104,9 +193,11 @@ namespace RPK.View
 
         public event Func<Material, Canal, IEnumerable<Parameter>>? SetSolvingParameters;
 
-        public event CalculationFunc? CalculationRequired;
+        public event CalculationFunc? CalculationRequiredAsync;
 
         public event Func<long>? SetAllocatedMemory;
+
+        public event Func<DataToExport, string, Task<bool>>? ExportToFileAsync;
 
         public void SetInitialData(IEnumerable<Canal> canals, IEnumerable<Material> materials)
         {
@@ -386,6 +477,10 @@ namespace RPK.View
 
         private Dictionary<TabPage, TabPageStatus> InputPagesStatuses { get; set; } = new();
 
+        private DataToExport? DataToExport { get; set; }
+
+        private CalculationResults? LastCalculatedResults { get; set; }
+
         enum TabPageStatus
         {
             Ok,
@@ -403,10 +498,12 @@ namespace RPK.View
             SetEnabledCertainControlsDueToVisualization(false);
 
             var calculationProcessor = new CalculationProcessor();
-            calculationProcessor.CalculationFunc += CalculationRequired;
+            calculationProcessor.CalculationFunc += CalculationRequiredAsync;
 
             (CalculationResults? calculationResults, TaskDialogResult taskDialogResult) = await
                 calculationProcessor.ProceedCalculationAsync(InputControlsAndParameters.Values);
+
+            LastCalculatedResults = calculationResults;
 
             this.BringToFront();
 
@@ -414,6 +511,26 @@ namespace RPK.View
 
             if (calculationResults is null || taskDialogResult is TaskDialogResult.Cancel)
                 return;
+
+            IEnumerable<Parameter> canalCharacteristics = InputControlsAndParameters.Where(p => p.Key.Parent == canalGeometryParametersLayout).Select(p => p.Value);
+
+            IEnumerable<Parameter> materialPropertyParameters = InputControlsAndParameters.Where(p => p.Key.Parent == materialPropertiesLayout).Select(p => p.Value);
+
+            IEnumerable<Parameter> variableParameters = InputControlsAndParameters.Where(p => p.Key.Parent == variableParametersLayout).Select(p => p.Value);
+
+            IEnumerable<Parameter> empiricalCoefficientsOfMathModel = InputControlsAndParameters
+                .Where(p => p.Key.Parent == empiricalCoefficientsOfMathModelLayout || 
+                p.Key.Parent == solvingMethodParametersLayout).Select(p => p.Value);
+
+            DataToExport = new DataToExport
+            {
+                CanalCharacteristics = (((Canal)canalChooseComboBox.SelectedItem).ToString(),
+                canalCharacteristics.ToArray()),
+                MaterialCharacteristics = (((Material)materialChooseComboBox.SelectedItem).ToString(), materialPropertyParameters.ToArray()),
+                VariableParameters = variableParameters.ToArray(),
+                EmpiricalParametersOfMathModel = empiricalCoefficientsOfMathModel.ToArray(),
+                CoordinatePrecision = GetCoordinatePrecision()
+            };
 
             if (taskDialogResult is TaskDialogResult.ShowResults)
                 tabControl.SelectedTab = resultsPage;
@@ -424,6 +541,8 @@ namespace RPK.View
         private void PrepareOutputControls()
         {
             IEnumerable<ParameterOutput> parameterOutputs = FindAllChildControls<ParameterOutput>(resultsPage.Controls);
+
+            exportResultsStripMenuItem.Enabled = false;
 
             foreach (ParameterOutput parameterOutput in parameterOutputs)
                 parameterOutput.Value = null;
@@ -460,6 +579,8 @@ namespace RPK.View
             temperaturePlot.Plot.AxisAuto();
             viscosityPlot.Plot.AxisAuto();
 
+            InitializePlotsLines();
+
             viscosityPlot.Render();
             temperaturePlot.Render();
 
@@ -467,6 +588,23 @@ namespace RPK.View
             temperaturePlot.Enabled = true;
 
             resultsTableGroupBox.Text = ($"Таблица результатов (визуализация завершена)");
+
+            exportResultsStripMenuItem.Enabled = true;
+        }
+
+        private void InitializePlotsLines()
+        {
+            TemperatureHLine = temperaturePlot.Plot.AddHorizontalLine(0);
+            TemperatureHLine.IsVisible = false;
+
+            TemperatureVLine = temperaturePlot.Plot.AddVerticalLine(0);
+            TemperatureVLine.IsVisible = false;
+
+            ViscosityHLine = viscosityPlot.Plot.AddHorizontalLine(0);
+            ViscosityHLine.IsVisible = false;
+
+            ViscosityVLine = viscosityPlot.Plot.AddVerticalLine(0);
+            ViscosityVLine.IsVisible = false;
         }
 
         private void SetEnabledCertainControlsDueToVisualization(bool enabled)
@@ -479,7 +617,7 @@ namespace RPK.View
             }
         }
 
-        private int GetCoordinatePrecision()
+        private long GetCoordinatePrecision()
         {
             ParameterInput? stepInput =
                 InputControlsAndParameters.Keys.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
@@ -510,7 +648,7 @@ namespace RPK.View
             temperaturePlot.Plot.AddSignal(plotTemperatures, (results.Count - 1) / results.Last().coordinate);
             viscosityPlot.Plot.AddSignal(plotViscosities, (results.Count - 1) / results.Last().coordinate);
 
-            int coordinatePrecision = GetCoordinatePrecision();
+            long coordinatePrecision = GetCoordinatePrecision();
 
             long timeElapsed = calculationResults.CalculationTime;
 
@@ -565,6 +703,15 @@ namespace RPK.View
             stopwatch.Stop();
         }
 
+#nullable disable
+        private HLine TemperatureHLine { get; set; }
+
+        private VLine TemperatureVLine { get; set; }
+
+        private HLine ViscosityHLine { get; set; }
+
+        private VLine ViscosityVLine { get; set; }
+
         private void Plot_MouseMove(object sender, MouseEventArgs e)
         {
             if (sender is not FormsPlot formsPlot || (formsPlot.Plot.GetPlottables().ElementAt(0) as SignalPlot) is null)
@@ -575,21 +722,36 @@ namespace RPK.View
             (double pointX, double pointY, int pointIndex) = ((SignalPlot)formsPlot.Plot.GetPlottables().ElementAt(0))
                 .GetPointNearestX(mouseCoordX);
 
+            //formsPlot.Plot.AddHorizontalLine().
+
             // place the highlight over the point of interest
-            int coordinatePrecision = GetCoordinatePrecision();
+            long coordinatePrecision = GetCoordinatePrecision();
 
             if (formsPlot == temperaturePlot)
             {
-                temperaturePlotGroupBox.Text = $"Курсор на X:{pointX.ToString($"F{coordinatePrecision}")} Y:{pointY:0.00}";
+                TemperatureHLine.IsVisible = true;
+                TemperatureHLine.Label = $"Y:{pointY:0.00}";
+                TemperatureHLine.Y = pointY;
+                
+                TemperatureVLine.IsVisible = true;
+                TemperatureVLine.Label = $"X:{pointX.ToString($"F{coordinatePrecision}")}";
+                TemperatureVLine.X = pointX;
             }
             else if (formsPlot == viscosityPlot)
             {
-                viscosityPlotGroupBox.Text = $"Курсор на X:{pointX.ToString($"F{coordinatePrecision}")} Y:{pointY:0.00}";
+                ViscosityHLine.IsVisible = true;
+                ViscosityHLine.Label = $"Y:{pointY:0.00}";
+                ViscosityHLine.Y = pointY;
+
+                ViscosityVLine.IsVisible = true;
+                ViscosityVLine.Label = $"X:{pointX.ToString($"F{coordinatePrecision}")}";
+                ViscosityVLine.X = pointX;
             }
+
+            formsPlot.Plot.Legend();
+            formsPlot.Render();
         }
     }
-
-#nullable disable
     public class CalculationResults
     {
         public List<(double coordinate, double tempreture, double viscosity)> ResultsTable { get; set; }
@@ -610,5 +772,26 @@ namespace RPK.View
         public int ProgressMaxValueForCalculation { get; set; }
 
         public CancellationToken CancellationToken { get; set; }
+    }
+
+    public class DataToExport
+    {
+        public (string canalType, IList<Parameter>) CanalCharacteristics { get; set; }
+
+        public (string materialType, IList<Parameter>) MaterialCharacteristics { get; set; }
+
+        public IList<Parameter> VariableParameters { get; set; }
+
+        public IList<Parameter> EmpiricalParametersOfMathModel { get; set; }
+
+        public IList<(Parameter coordinate, Parameter temperature, Parameter viscosity)> ContiniousResults { get; set; }
+
+        public long CoordinatePrecision { get; set; }
+
+        public IDictionary<string, IList<Parameter>> DiscreteOutputParameters { get; set; }
+
+        public Bitmap TemperaturePlot { get; set; }
+
+        public Bitmap ViscosityPlot { get; set; }
     }
 }

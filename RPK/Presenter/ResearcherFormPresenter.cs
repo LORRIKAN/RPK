@@ -19,10 +19,14 @@ namespace RPK.Presenter
 
         public MathModel MathModel { get; set; }
 
+        public FileExportService FileExportService { get; set; }
+
         private IEnumerable<View.Parameter> Parameters { get; set; }
 
-        public ResearcherFormPresenter(ResearcherForm researcherForm, DatabaseContext repository, MathModel mathModel)
+        public ResearcherFormPresenter(ResearcherForm researcherForm, DatabaseContext repository, MathModel mathModel,
+            FileExportService fileExportService)
         {
+            FileExportService = fileExportService;
             Repository = repository;
             MathModel = mathModel;
             MathModel.SetParametersValues += MathModel_SetParametersValues;
@@ -30,9 +34,15 @@ namespace RPK.Presenter
             ResearcherForm = researcherForm;
             ResearcherForm.SetVariableParameters += ResearcherForm_SetVariableParameters;
             ResearcherForm.SetSolvingParameters += ResearcherForm_SetSolvingParameters;
-            ResearcherForm.CalculationRequired += (calculationParameters) => 
-                ResearcherForm_CalculationRequiredAsync(calculationParameters).Result;
+            ResearcherForm.CalculationRequiredAsync += ResearcherForm_CalculationRequiredAsync;
+            ResearcherForm.ExportToFileAsync += ResearcherForm_ExportToFileAsync;
+
             ResearcherForm.SetAllocatedMemory += ResearcherForm_SetAllocatedMemory;
+        }
+
+        private async Task<bool> ResearcherForm_ExportToFileAsync(DataToExport dataToExport, string filePath)
+        {
+            return await FileExportService.ExportToExcelFileAsync(dataToExport, filePath);
         }
 
         private long ResearcherForm_SetAllocatedMemory()
