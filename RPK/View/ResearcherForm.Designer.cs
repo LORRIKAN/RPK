@@ -57,16 +57,11 @@
             this.temperatureColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.viscosityColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.discreteResultsLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.qualityIndicatorsGroupBox = new System.Windows.Forms.GroupBox();
-            this.qualityIndicatorsLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.canalProductivityOutput = new RPK.InterfaceElements.ParameterOutput();
+            this.calculationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
+            this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
             this.productTemperatureOutput = new RPK.InterfaceElements.ParameterOutput();
             this.productViscosityOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.productivityAndPerfomanceLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.canalProductivityOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.programPerfomanceGroupBox = new System.Windows.Forms.GroupBox();
-            this.programPerfomanceLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.programWorkTimeOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
             this.temperaturePlotGroupBox = new System.Windows.Forms.GroupBox();
             this.temperaturePlot = new ScottPlot.FormsPlot();
             this.viscosityPlotGroupBox = new System.Windows.Forms.GroupBox();
@@ -82,6 +77,7 @@
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.backgroundInputControlsFiller = new System.ComponentModel.BackgroundWorker();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.visualizationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
             this.tabControl.SuspendLayout();
             this.inputParametersPage.SuspendLayout();
             this.inputParametersLayout.SuspendLayout();
@@ -99,11 +95,6 @@
             this.resultsTableGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.resultsGrid)).BeginInit();
             this.discreteResultsLayout.SuspendLayout();
-            this.qualityIndicatorsGroupBox.SuspendLayout();
-            this.qualityIndicatorsLayout.SuspendLayout();
-            this.productivityAndPerfomanceLayout.SuspendLayout();
-            this.programPerfomanceGroupBox.SuspendLayout();
-            this.programPerfomanceLayout.SuspendLayout();
             this.temperaturePlotGroupBox.SuspendLayout();
             this.viscosityPlotGroupBox.SuspendLayout();
             this.menuStrip.SuspendLayout();
@@ -429,42 +420,55 @@
             this.discreteResultsLayout.ColumnCount = 2;
             this.discreteResultsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.discreteResultsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.discreteResultsLayout.Controls.Add(this.qualityIndicatorsGroupBox, 0, 0);
-            this.discreteResultsLayout.Controls.Add(this.productivityAndPerfomanceLayout, 1, 0);
+            this.discreteResultsLayout.Controls.Add(this.canalProductivityOutput, 0, 2);
+            this.discreteResultsLayout.Controls.Add(this.calculationTimeOutput, 1, 0);
+            this.discreteResultsLayout.Controls.Add(this.programOccupiedRAMOutput, 1, 2);
+            this.discreteResultsLayout.Controls.Add(this.productTemperatureOutput, 0, 0);
+            this.discreteResultsLayout.Controls.Add(this.productViscosityOutput, 0, 1);
+            this.discreteResultsLayout.Controls.Add(this.visualizationTimeOutput, 1, 1);
             this.discreteResultsLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.discreteResultsLayout.Location = new System.Drawing.Point(3, 282);
             this.discreteResultsLayout.Name = "discreteResultsLayout";
-            this.discreteResultsLayout.RowCount = 1;
-            this.discreteResultsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.discreteResultsLayout.RowCount = 3;
+            this.discreteResultsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.discreteResultsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.discreteResultsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.discreteResultsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.discreteResultsLayout.Size = new System.Drawing.Size(682, 274);
             this.discreteResultsLayout.TabIndex = 3;
             // 
-            // qualityIndicatorsGroupBox
+            // canalProductivityOutput
             // 
-            this.qualityIndicatorsGroupBox.Controls.Add(this.qualityIndicatorsLayout);
-            this.qualityIndicatorsGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.qualityIndicatorsGroupBox.Location = new System.Drawing.Point(3, 3);
-            this.qualityIndicatorsGroupBox.Name = "qualityIndicatorsGroupBox";
-            this.qualityIndicatorsGroupBox.Size = new System.Drawing.Size(335, 268);
-            this.qualityIndicatorsGroupBox.TabIndex = 6;
-            this.qualityIndicatorsGroupBox.TabStop = false;
-            this.qualityIndicatorsGroupBox.Text = "Показатели качества";
+            this.canalProductivityOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.canalProductivityOutput.Location = new System.Drawing.Point(3, 185);
+            this.canalProductivityOutput.MeasureUnit = "кг/ч";
+            this.canalProductivityOutput.Name = "canalProductivityOutput";
+            this.canalProductivityOutput.ParameterName = "Производительность канала";
+            this.canalProductivityOutput.Size = new System.Drawing.Size(335, 86);
+            this.canalProductivityOutput.TabIndex = 16;
+            this.canalProductivityOutput.Value = null;
             // 
-            // qualityIndicatorsLayout
+            // calculationTimeOutput
             // 
-            this.qualityIndicatorsLayout.ColumnCount = 1;
-            this.qualityIndicatorsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.qualityIndicatorsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.qualityIndicatorsLayout.Controls.Add(this.productTemperatureOutput, 0, 0);
-            this.qualityIndicatorsLayout.Controls.Add(this.productViscosityOutput, 0, 1);
-            this.qualityIndicatorsLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.qualityIndicatorsLayout.Location = new System.Drawing.Point(3, 27);
-            this.qualityIndicatorsLayout.Name = "qualityIndicatorsLayout";
-            this.qualityIndicatorsLayout.RowCount = 2;
-            this.qualityIndicatorsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.qualityIndicatorsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.qualityIndicatorsLayout.Size = new System.Drawing.Size(329, 238);
-            this.qualityIndicatorsLayout.TabIndex = 0;
+            this.calculationTimeOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.calculationTimeOutput.Location = new System.Drawing.Point(344, 3);
+            this.calculationTimeOutput.MeasureUnit = "мс";
+            this.calculationTimeOutput.Name = "calculationTimeOutput";
+            this.calculationTimeOutput.ParameterName = "Время расчётов";
+            this.calculationTimeOutput.Size = new System.Drawing.Size(335, 85);
+            this.calculationTimeOutput.TabIndex = 15;
+            this.calculationTimeOutput.Value = null;
+            // 
+            // programOccupiedRAMOutput
+            // 
+            this.programOccupiedRAMOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.programOccupiedRAMOutput.Location = new System.Drawing.Point(344, 185);
+            this.programOccupiedRAMOutput.MeasureUnit = "мб";
+            this.programOccupiedRAMOutput.Name = "programOccupiedRAMOutput";
+            this.programOccupiedRAMOutput.ParameterName = "Занимаемая оперативная память";
+            this.programOccupiedRAMOutput.Size = new System.Drawing.Size(335, 86);
+            this.programOccupiedRAMOutput.TabIndex = 14;
+            this.programOccupiedRAMOutput.Value = null;
             // 
             // productTemperatureOutput
             // 
@@ -473,94 +477,20 @@
             this.productTemperatureOutput.MeasureUnit = "°C";
             this.productTemperatureOutput.Name = "productTemperatureOutput";
             this.productTemperatureOutput.ParameterName = "Температура продукта";
-            this.productTemperatureOutput.Size = new System.Drawing.Size(323, 113);
-            this.productTemperatureOutput.TabIndex = 0;
+            this.productTemperatureOutput.Size = new System.Drawing.Size(335, 85);
+            this.productTemperatureOutput.TabIndex = 8;
             this.productTemperatureOutput.Value = null;
             // 
             // productViscosityOutput
             // 
             this.productViscosityOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.productViscosityOutput.Location = new System.Drawing.Point(3, 122);
+            this.productViscosityOutput.Location = new System.Drawing.Point(3, 94);
             this.productViscosityOutput.MeasureUnit = "Па⋅с";
             this.productViscosityOutput.Name = "productViscosityOutput";
             this.productViscosityOutput.ParameterName = "Вязкость продукта";
-            this.productViscosityOutput.Size = new System.Drawing.Size(323, 113);
-            this.productViscosityOutput.TabIndex = 1;
+            this.productViscosityOutput.Size = new System.Drawing.Size(335, 85);
+            this.productViscosityOutput.TabIndex = 10;
             this.productViscosityOutput.Value = null;
-            // 
-            // productivityAndPerfomanceLayout
-            // 
-            this.productivityAndPerfomanceLayout.ColumnCount = 1;
-            this.productivityAndPerfomanceLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.productivityAndPerfomanceLayout.Controls.Add(this.canalProductivityOutput, 0, 0);
-            this.productivityAndPerfomanceLayout.Controls.Add(this.programPerfomanceGroupBox, 0, 1);
-            this.productivityAndPerfomanceLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.productivityAndPerfomanceLayout.Location = new System.Drawing.Point(344, 3);
-            this.productivityAndPerfomanceLayout.Name = "productivityAndPerfomanceLayout";
-            this.productivityAndPerfomanceLayout.RowCount = 2;
-            this.productivityAndPerfomanceLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.productivityAndPerfomanceLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));
-            this.productivityAndPerfomanceLayout.Size = new System.Drawing.Size(335, 268);
-            this.productivityAndPerfomanceLayout.TabIndex = 7;
-            // 
-            // canalProductivityOutput
-            // 
-            this.canalProductivityOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.canalProductivityOutput.Location = new System.Drawing.Point(3, 3);
-            this.canalProductivityOutput.MeasureUnit = "кг/ч";
-            this.canalProductivityOutput.Name = "canalProductivityOutput";
-            this.canalProductivityOutput.ParameterName = "Производительность канала";
-            this.canalProductivityOutput.Size = new System.Drawing.Size(329, 83);
-            this.canalProductivityOutput.TabIndex = 0;
-            this.canalProductivityOutput.Value = null;
-            // 
-            // programPerfomanceGroupBox
-            // 
-            this.programPerfomanceGroupBox.Controls.Add(this.programPerfomanceLayout);
-            this.programPerfomanceGroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.programPerfomanceGroupBox.Location = new System.Drawing.Point(3, 92);
-            this.programPerfomanceGroupBox.Name = "programPerfomanceGroupBox";
-            this.programPerfomanceGroupBox.Size = new System.Drawing.Size(329, 173);
-            this.programPerfomanceGroupBox.TabIndex = 1;
-            this.programPerfomanceGroupBox.TabStop = false;
-            this.programPerfomanceGroupBox.Text = "Производительность программы";
-            // 
-            // programPerfomanceLayout
-            // 
-            this.programPerfomanceLayout.ColumnCount = 1;
-            this.programPerfomanceLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.programPerfomanceLayout.Controls.Add(this.programWorkTimeOutput, 0, 0);
-            this.programPerfomanceLayout.Controls.Add(this.programOccupiedRAMOutput, 0, 1);
-            this.programPerfomanceLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.programPerfomanceLayout.Location = new System.Drawing.Point(3, 27);
-            this.programPerfomanceLayout.Name = "programPerfomanceLayout";
-            this.programPerfomanceLayout.RowCount = 2;
-            this.programPerfomanceLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.programPerfomanceLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.programPerfomanceLayout.Size = new System.Drawing.Size(323, 143);
-            this.programPerfomanceLayout.TabIndex = 0;
-            // 
-            // programWorkTimeOutput
-            // 
-            this.programWorkTimeOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.programWorkTimeOutput.Location = new System.Drawing.Point(3, 3);
-            this.programWorkTimeOutput.MeasureUnit = "мс";
-            this.programWorkTimeOutput.Name = "programWorkTimeOutput";
-            this.programWorkTimeOutput.ParameterName = "Время расчётов и визуализации";
-            this.programWorkTimeOutput.Size = new System.Drawing.Size(317, 65);
-            this.programWorkTimeOutput.TabIndex = 0;
-            this.programWorkTimeOutput.Value = null;
-            // 
-            // programOccupiedRAMOutput
-            // 
-            this.programOccupiedRAMOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.programOccupiedRAMOutput.Location = new System.Drawing.Point(3, 74);
-            this.programOccupiedRAMOutput.MeasureUnit = "мб";
-            this.programOccupiedRAMOutput.Name = "programOccupiedRAMOutput";
-            this.programOccupiedRAMOutput.ParameterName = "Занимаемая оперативная память";
-            this.programOccupiedRAMOutput.Size = new System.Drawing.Size(317, 66);
-            this.programOccupiedRAMOutput.TabIndex = 1;
-            this.programOccupiedRAMOutput.Value = null;
             // 
             // temperaturePlotGroupBox
             // 
@@ -682,6 +612,17 @@
             // 
             this.saveFileDialog.Filter = "Файлы Excel|*.xlsx";
             // 
+            // visualizationTimeOutput
+            // 
+            this.visualizationTimeOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.visualizationTimeOutput.Location = new System.Drawing.Point(344, 94);
+            this.visualizationTimeOutput.MeasureUnit = "мс";
+            this.visualizationTimeOutput.Name = "visualizationTimeOutput";
+            this.visualizationTimeOutput.ParameterName = "Время визуализации";
+            this.visualizationTimeOutput.Size = new System.Drawing.Size(335, 85);
+            this.visualizationTimeOutput.TabIndex = 17;
+            this.visualizationTimeOutput.Value = null;
+            // 
             // ResearcherForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
@@ -709,11 +650,6 @@
             this.resultsTableGroupBox.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.resultsGrid)).EndInit();
             this.discreteResultsLayout.ResumeLayout(false);
-            this.qualityIndicatorsGroupBox.ResumeLayout(false);
-            this.qualityIndicatorsLayout.ResumeLayout(false);
-            this.productivityAndPerfomanceLayout.ResumeLayout(false);
-            this.programPerfomanceGroupBox.ResumeLayout(false);
-            this.programPerfomanceLayout.ResumeLayout(false);
             this.temperaturePlotGroupBox.ResumeLayout(false);
             this.viscosityPlotGroupBox.ResumeLayout(false);
             this.menuStrip.ResumeLayout(false);
@@ -750,16 +686,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn coordinateColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn temperatureColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn viscosityColumn;
-        private InterfaceElements.ParameterOutput productTemperatureOutput;
-        private InterfaceElements.ParameterOutput productViscosityOutput;
-        private System.Windows.Forms.GroupBox qualityIndicatorsGroupBox;
-        private System.Windows.Forms.TableLayoutPanel qualityIndicatorsLayout;
-        private System.Windows.Forms.TableLayoutPanel productivityAndPerfomanceLayout;
-        private InterfaceElements.ParameterOutput canalProductivityOutput;
-        private System.Windows.Forms.GroupBox programPerfomanceGroupBox;
-        private System.Windows.Forms.TableLayoutPanel programPerfomanceLayout;
-        private InterfaceElements.ParameterOutput programWorkTimeOutput;
-        private InterfaceElements.ParameterOutput programOccupiedRAMOutput;
         private System.Windows.Forms.ErrorProvider errorProvider;
         private System.Windows.Forms.ImageList tabPagesImageList;
         private System.Windows.Forms.GroupBox canalChooseGroupBox;
@@ -778,6 +704,12 @@
         private System.Windows.Forms.GroupBox viscosityPlotGroupBox;
         private ScottPlot.FormsPlot viscosityPlot;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private InterfaceElements.ParameterOutput canalProductivityOutput;
+        private InterfaceElements.ParameterOutput calculationTimeOutput;
+        private InterfaceElements.ParameterOutput programOccupiedRAMOutput;
+        private InterfaceElements.ParameterOutput productTemperatureOutput;
+        private InterfaceElements.ParameterOutput productViscosityOutput;
+        private InterfaceElements.ParameterOutput visualizationTimeOutput;
     }
 }
 

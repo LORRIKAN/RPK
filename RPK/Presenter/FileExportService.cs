@@ -162,8 +162,8 @@ namespace RPK.Presenter
                         .WithSize(dataToExport.TemperaturePlot.Width, dataToExport.TemperaturePlot.Height);
 
                     using var stream1 = new MemoryStream();
-                    dataToExport.ViscosityPlot.Save(stream, ImageFormat.Png);
-                    ws.AddPicture(stream).MoveTo(ws.Cell("O8"))
+                    dataToExport.ViscosityPlot.Save(stream1, ImageFormat.Png);
+                    ws.AddPicture(stream1).MoveTo(ws.Cell("O8"))
                         .WithSize(dataToExport.ViscosityPlot.Width, dataToExport.ViscosityPlot.Height);
 
                     wb.SaveAs(filePath);
