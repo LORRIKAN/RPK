@@ -712,7 +712,7 @@ namespace RPK.View
 
         private void Plot_MouseMove(object sender, MouseEventArgs e)
         {
-            if (sender is not FormsPlot formsPlot || (formsPlot.Plot.GetPlottables().ElementAt(0) as SignalPlot) is null)
+            if (sender is not FormsPlot formsPlot || (formsPlot.Plot.GetPlottables().ElementAtOrDefault(0) as SignalPlot) is null)
                 return;
 
             // determine point nearest the cursor
