@@ -23,6 +23,7 @@ namespace RPK.InterfaceElements
 
         private void Validator_Validated(object result)
         {
+            value = result;
             ParameterInputStatus = ParameterInputStatus.Validated;
             ParsedAndValidated?.Invoke(this, result);
         }
@@ -52,6 +53,18 @@ namespace RPK.InterfaceElements
 
                 validator.Validated += Validator_Validated;
                 validator.Invalidated += Validator_Invalidated;
+            }
+        }
+
+        private object? value;
+        public object? Value
+        {
+            get => value; set
+            {
+                this.value = value;
+                InputTextBox.Text = this.value?.ToString();
+                if (string.IsNullOrEmpty(InputTextBox.Text) is false && InputTextBox.Text is not null)
+                    Validator.ValidateParameter(InputTextBox.Text);
             }
         }
 

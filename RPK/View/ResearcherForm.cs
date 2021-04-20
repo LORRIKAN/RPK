@@ -34,12 +34,12 @@ namespace RPK.View
             InputPagesStatuses.Add(variableParametersPage, TabPageStatus.Incomplete);
             InputPagesStatuses.Add(mathModelParametersPage, TabPageStatus.Incomplete);
 
-            temperaturePlot.Plot.Title("График зависимости температуры материала от длины канала");
+            temperaturePlot.Plot.Title("График распределения температуры по длине канала");
             temperaturePlot.Plot.XLabel("Координата по длине канала (м)");
             temperaturePlot.Plot.YLabel("Температура материала (°C)");
             temperaturePlot.Render();
 
-            viscosityPlot.Plot.Title("График зависимости вязкости материала от длины канала");
+            viscosityPlot.Plot.Title("График распределения вязкости по длине канала");
             viscosityPlot.Plot.XLabel("Координата по длине канала (м)");
             viscosityPlot.Plot.YLabel("Вязкость материала (Па⋅с)");
             viscosityPlot.Render();
@@ -68,41 +68,41 @@ namespace RPK.View
 
             string filePath = saveFileDialog.FileName;
 
-            temperaturePlot.Plot.Legend(false);
-            viscosityPlot.Plot.Legend(false);
+            //temperaturePlot.Plot.Legend(false);
+            //viscosityPlot.Plot.Legend(false);
 
-            TemperatureHLine.IsVisible = false;
-            TemperatureVLine.IsVisible = false;
+            //TemperatureHLine.IsVisible = false;
+            //TemperatureVLine.IsVisible = false;
 
-            ViscosityHLine.IsVisible = false;
-            ViscosityVLine.IsVisible = false;
+            //ViscosityHLine.IsVisible = false;
+            //ViscosityVLine.IsVisible = false;
 
-            temperaturePlot.Plot.Style(Style.Light1);
-            viscosityPlot.Plot.Style(Style.Light1);
+            //temperaturePlot.Plot.Style(Style.Light1);
+            //viscosityPlot.Plot.Style(Style.Light1);
 
-            temperaturePlot.Plot.Title("График зависимости температуры материала от длины канала");
-            viscosityPlot.Plot.Title("График зависимости вязкости материала от длины канала");
+            //temperaturePlot.Plot.Title("График распределения температуры по длине канала");
+            //viscosityPlot.Plot.Title("График распределения вязкости по длине канала");
 
-            temperaturePlot.Plot.AxisAuto();
-            viscosityPlot.Plot.AxisAuto();
+            //temperaturePlot.Plot.AxisAuto();
+            //viscosityPlot.Plot.AxisAuto();
 
-            DataToExport.TemperaturePlot = temperaturePlot.Plot.Render();
-            DataToExport.ViscosityPlot = viscosityPlot.Plot.Render();
+            //DataToExport.TemperaturePlot = temperaturePlot.Plot.Render();
+            //DataToExport.ViscosityPlot = viscosityPlot.Plot.Render();
 
-            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(визуализация завершена)");
-            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(визуализация завершена)");
+            //temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}(визуализация завершена)");
+            //viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}(визуализация завершена)");
 
-            temperaturePlot.Plot.Legend(true);
-            viscosityPlot.Plot.Legend(true);
+            //temperaturePlot.Plot.Legend(true);
+            //viscosityPlot.Plot.Legend(true);
 
-            TemperatureHLine.IsVisible = true;
-            TemperatureVLine.IsVisible = true;
+            //TemperatureHLine.IsVisible = true;
+            //TemperatureVLine.IsVisible = true;
 
-            ViscosityHLine.IsVisible = true;
-            ViscosityVLine.IsVisible = true;
+            //ViscosityHLine.IsVisible = true;
+            //ViscosityVLine.IsVisible = true;
 
-            temperaturePlot.Render();
-            viscosityPlot.Render();
+            //temperaturePlot.Render();
+            //viscosityPlot.Render();
 
             await Task.Run(() =>
             {
@@ -273,21 +273,15 @@ namespace RPK.View
                 var parameterInput = new T
                 {
                     ParameterName = parameter.Name,
-                    MeasureUnit = parameter.MeasureUnit
+                    MeasureUnit = parameter.MeasureUnit,
                 };
 
                 parameterInput.ParsedAndValidated += InputControlAcquireResult;
                 parameterInput.Invalidated += InputControlHandleError;
 
+                parameterInput.Value = parameter.Value;
+
                 return parameterInput;
-            }
-
-            if (parameter.Value is not null)
-            {
-                ParameterOutput parameterOutput = InitializeInputControl<ParameterOutput>(parameter);
-                parameterOutput.Value = parameter.Value;
-
-                return parameterOutput;
             }
 
             if (parameter is ParameterWithBounds parameterWithBounds)
@@ -295,8 +289,17 @@ namespace RPK.View
                 ParameterInputWithBounds parameterInputWithBounds = InitializeInputControl<ParameterInputWithBounds>(parameter);
                 parameterInputWithBounds.LowerBound = parameterWithBounds.LowerBound;
                 parameterInputWithBounds.UpperBound = parameterWithBounds.UpperBound;
+                parameterInputWithBounds.BoundsAreVisible = parameterWithBounds.ShowBounds;
+                parameterInputWithBounds.Value = parameterWithBounds.Value;
 
                 return parameterInputWithBounds;
+            }
+
+            if (parameter.Value is not null)
+            {
+                ParameterOutput parameterOutput = InitializeInputControl<ParameterOutput>(parameter);
+
+                return parameterOutput;
             }
 
             return InitializeInputControl<ParameterInput>(parameter);
@@ -559,8 +562,8 @@ namespace RPK.View
             temperaturePlotGroupBox.Text = string.Empty;
             viscosityPlotGroupBox.Text = string.Empty;
 
-            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала");
-            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала");
+            temperaturePlot.Plot.Title($"График распределения температуры по длине канала");
+            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала");
 
             resultsGrid.Rows.Clear();
             resultsTableGroupBox.Text = ($"Таблица результатов");
@@ -568,16 +571,16 @@ namespace RPK.View
 
         private void OnVisualizationStarted(CalculationResults obj)
         {
-            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(в процессе визуализации)");
-            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(в процессе визуализации)");
+            temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}(в процессе визуализации)");
+            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}(в процессе визуализации)");
 
             resultsTableGroupBox.Text = ($"Таблица результатов (в процессе визуализации)");
         }
 
         private void OnVisualizationFinished(CalculationResults calculationResults)
         {
-            temperaturePlot.Plot.Title($"График зависимости температуры материала от длины канала{Environment.NewLine}(визуализация завершена)");
-            viscosityPlot.Plot.Title($"График зависимости вязкости материала от длины канала{Environment.NewLine}(визуализация завершена)");
+            temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}(визуализация завершена)");
+            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}(визуализация завершена)");
 
             temperaturePlot.Plot.AxisAuto();
             viscosityPlot.Plot.AxisAuto();
@@ -630,7 +633,7 @@ namespace RPK.View
 
             string step = stepInput.InputTextBox.Text;
 
-            return step.SkipWhile(sym => sym is (not '.' or ',')).Count(sym => sym is (not '.' or ','));
+            return step.SkipWhile(sym => sym is not  ('.' or ',')).Count(sym => sym is not ('.' or ','));
         }
 
         private async Task FillResultControlsAsync(CalculationResults calculationResults, CancellationToken cancellationToken)
@@ -788,8 +791,8 @@ namespace RPK.View
 
         public IDictionary<string, IList<Parameter>> DiscreteOutputParameters { get; set; }
 
-        public Bitmap TemperaturePlot { get; set; }
+        //public Bitmap TemperaturePlot { get; set; }
 
-        public Bitmap ViscosityPlot { get; set; }
+        //public Bitmap ViscosityPlot { get; set; }
     }
 }

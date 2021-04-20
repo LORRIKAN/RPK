@@ -156,15 +156,15 @@ namespace RPK.Presenter
                     //ws.RowsUsed().AdjustToContents();
                     //ws.ColumnsUsed().AdjustToContents();
 
-                    using var stream = new MemoryStream();
-                    dataToExport.TemperaturePlot.Save(stream, ImageFormat.Png);
-                    ws.AddPicture(stream).MoveTo(ws.Cell("H8"))
-                        .WithSize(dataToExport.TemperaturePlot.Width, dataToExport.TemperaturePlot.Height);
+                    //using var stream = new MemoryStream();
+                    //dataToExport.TemperaturePlot.Save(stream, ImageFormat.Png);
+                    //ws.AddPicture(stream).MoveTo(ws.Cell("H8"))
+                    //    .WithSize(dataToExport.TemperaturePlot.Width, dataToExport.TemperaturePlot.Height);
 
-                    using var stream1 = new MemoryStream();
-                    dataToExport.ViscosityPlot.Save(stream1, ImageFormat.Png);
-                    ws.AddPicture(stream1).MoveTo(ws.Cell("O8"))
-                        .WithSize(dataToExport.ViscosityPlot.Width, dataToExport.ViscosityPlot.Height);
+                    //using var stream1 = new MemoryStream();
+                    //dataToExport.ViscosityPlot.Save(stream1, ImageFormat.Png);
+                    //ws.AddPicture(stream1).MoveTo(ws.Cell("O8"))
+                    //    .WithSize(dataToExport.ViscosityPlot.Width, dataToExport.ViscosityPlot.Height);
 
                     wb.SaveAs(filePath);
 

@@ -22,7 +22,7 @@ namespace RPK.Model
 
         public override string ToString()
         {
-            return $"{MaterialId}. {Name}";
+            return Name;
         }
     }
 }

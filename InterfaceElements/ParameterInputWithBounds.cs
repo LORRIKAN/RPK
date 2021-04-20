@@ -7,6 +7,7 @@ namespace RPK.InterfaceElements
     {
         public ParameterInputWithBounds()
         {
+            InitializeComponent();
             Validator = new DoubleTypeParameterParserAndValidatorWithCustomBounds();
         }
 
@@ -18,7 +19,7 @@ namespace RPK.InterfaceElements
             {
                 lowerBound = value;
                 ((DoubleTypeParameterParserAndValidatorWithCustomBounds)Validator).LowerBound = lowerBound;
-                ChangeBoundsText();
+                lowerBoundLabel.Text = $"Нижняя регламентная граница: {lowerBound}";
             }
         }
 
@@ -30,26 +31,74 @@ namespace RPK.InterfaceElements
             {
                 upperBound = value;
                 ((DoubleTypeParameterParserAndValidatorWithCustomBounds)Validator).UpperBound = upperBound;
-                ChangeBoundsText();
+                upperBoundLabel.Text = $"Верхняя регламентная граница: {upperBound}";
             }
         }
 
-        double oldUpperBound = default;
-        double oldLowerBound = default;
-        private void ChangeBoundsText()
-        {
-            if (GroupBox.Text.Contains($"В пределах от {oldLowerBound} до {oldUpperBound}"))
+        private bool boundsAreVisible;
+        public bool BoundsAreVisible { get => boundsAreVisible; 
+            set 
             {
-                GroupBox.Text = GroupBox.Text.Replace($"В пределах от {oldLowerBound} до {oldUpperBound}",
-                    $"В пределах от {LowerBound} до {UpperBound}");
-            }
-            else
-            {
-                GroupBox.Text += $" (В пределах от {LowerBound} до {UpperBound})";
-            }
+                boundsAreVisible = value;
+                if (boundsAreVisible is false)
+                {
+                    lowerBoundLabel.Visible = false;
+                    upperBoundLabel.Visible = false;
+                }
+                else
+                {
+                    lowerBoundLabel.Visible = true;
+                    upperBoundLabel.Visible = true;
+                }
+            } 
+        }
 
-            oldLowerBound = LowerBound;
-            oldUpperBound = UpperBound;
+        private Label lowerBoundLabel;
+        private Label upperBoundLabel;
+        private void InitializeComponent()
+        {
+            this.lowerBoundLabel = new System.Windows.Forms.Label();
+            this.upperBoundLabel = new System.Windows.Forms.Label();
+            this.groupBox.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // groupBox
+            // 
+            this.groupBox.Controls.Add(this.upperBoundLabel);
+            this.groupBox.Controls.Add(this.lowerBoundLabel);
+            this.groupBox.Size = new System.Drawing.Size(619, 180);
+            this.groupBox.Controls.SetChildIndex(this.textBox, 0);
+            this.groupBox.Controls.SetChildIndex(this.label, 0);
+            this.groupBox.Controls.SetChildIndex(this.lowerBoundLabel, 0);
+            this.groupBox.Controls.SetChildIndex(this.upperBoundLabel, 0);
+            // 
+            // lowerBoundLabel
+            // 
+            this.lowerBoundLabel.AutoSize = true;
+            this.lowerBoundLabel.Location = new System.Drawing.Point(3, 65);
+            this.lowerBoundLabel.Name = "lowerBoundLabel";
+            this.lowerBoundLabel.Size = new System.Drawing.Size(269, 25);
+            this.lowerBoundLabel.TabIndex = 2;
+            this.lowerBoundLabel.Text = "Нижняя регламентная граница:";
+            // 
+            // upperBoundLabel
+            // 
+            this.upperBoundLabel.AutoSize = true;
+            this.upperBoundLabel.Location = new System.Drawing.Point(3, 99);
+            this.upperBoundLabel.Name = "upperBoundLabel";
+            this.upperBoundLabel.Size = new System.Drawing.Size(271, 25);
+            this.upperBoundLabel.TabIndex = 3;
+            this.upperBoundLabel.Text = "Верхняя регламентная граница:";
+            // 
+            // ParameterInputWithBounds
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
+            this.Name = "ParameterInputWithBounds";
+            this.Size = new System.Drawing.Size(619, 180);
+            this.groupBox.ResumeLayout(false);
+            this.groupBox.PerformLayout();
+            this.ResumeLayout(false);
+
         }
     }
 }

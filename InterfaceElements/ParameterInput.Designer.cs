@@ -79,9 +79,8 @@ namespace RPK.InterfaceElements
         }
 
         #endregion
-
-        private System.Windows.Forms.GroupBox groupBox;
-        private System.Windows.Forms.Label label;
-        private System.Windows.Forms.TextBox textBox;
+        protected System.Windows.Forms.GroupBox groupBox;
+        protected System.Windows.Forms.Label label;
+        protected System.Windows.Forms.TextBox textBox;
     }
 }

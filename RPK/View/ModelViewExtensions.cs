@@ -53,7 +53,7 @@ namespace RPK.View
     }
 
     public record ParameterWithBounds(long? ParameterId, string Name, string Designation, string MeasureUnit,
-        object? Value, double LowerBound, double UpperBound) :
+        object? Value, double LowerBound, double UpperBound, bool ShowBounds) :
         Parameter(ParameterId, Name, Designation, MeasureUnit, Value)
     {
         public static explicit operator ParameterWithBounds(VariableParameter variableParameter)
@@ -66,15 +66,16 @@ namespace RPK.View
                 MeasureUnit: variableParameter.Parameter.MeasureUnit,
                 Value: null,
                 LowerBound: variableParameter.ValueLowerBound,
-                UpperBound: variableParameter.ValueUpperBound
+                UpperBound: variableParameter.ValueUpperBound,
+                ShowBounds : true
             );
         }
     }
 
     public static class ToStringExtensions
     {
-        public static string ToString(this Material material) => $"{material.MaterialId}. {material.Name}";
+        public static string ToString(this Material material) => material.Name;
 
-        public static string ToString(this Canal canal) => $"{canal.CanalId}. {canal.Brand}";
+        public static string ToString(this Canal canal) => canal.Brand;
     }
 }

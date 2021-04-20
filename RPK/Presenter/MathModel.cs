@@ -186,7 +186,7 @@ namespace RPK.Presenter
 
             Ni = new IteratableResult<double>(z => u0 * Exp(-b * (Ti[z] - Tr)) * Pow(gamma, n - 1));
 
-            Q = new FinalResult<double>(() => p * Qch);
+            Q = new FinalResult<double>(() => p * Qch * 3600);
 
             T = new FinalResult<double>(() => Ti.Values.Last().Value);
 

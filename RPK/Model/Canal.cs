@@ -20,7 +20,7 @@ namespace RPK.Model
 
         public override string ToString()
         {
-            return $"{CanalId}. {Brand}";
+            return Brand;
         }
     }
 }

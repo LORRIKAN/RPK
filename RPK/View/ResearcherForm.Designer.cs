@@ -62,6 +62,7 @@
             this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
             this.productTemperatureOutput = new RPK.InterfaceElements.ParameterOutput();
             this.productViscosityOutput = new RPK.InterfaceElements.ParameterOutput();
+            this.visualizationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
             this.temperaturePlotGroupBox = new System.Windows.Forms.GroupBox();
             this.temperaturePlot = new ScottPlot.FormsPlot();
             this.viscosityPlotGroupBox = new System.Windows.Forms.GroupBox();
@@ -77,7 +78,6 @@
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.backgroundInputControlsFiller = new System.ComponentModel.BackgroundWorker();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.visualizationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
             this.tabControl.SuspendLayout();
             this.inputParametersPage.SuspendLayout();
             this.inputParametersLayout.SuspendLayout();
@@ -463,9 +463,9 @@
             // 
             this.programOccupiedRAMOutput.Dock = System.Windows.Forms.DockStyle.Fill;
             this.programOccupiedRAMOutput.Location = new System.Drawing.Point(344, 185);
-            this.programOccupiedRAMOutput.MeasureUnit = "мб";
+            this.programOccupiedRAMOutput.MeasureUnit = "Мб";
             this.programOccupiedRAMOutput.Name = "programOccupiedRAMOutput";
-            this.programOccupiedRAMOutput.ParameterName = "Занимаемая оперативная память";
+            this.programOccupiedRAMOutput.ParameterName = "Используемая оперативная память";
             this.programOccupiedRAMOutput.Size = new System.Drawing.Size(335, 86);
             this.programOccupiedRAMOutput.TabIndex = 14;
             this.programOccupiedRAMOutput.Value = null;
@@ -491,6 +491,17 @@
             this.productViscosityOutput.Size = new System.Drawing.Size(335, 85);
             this.productViscosityOutput.TabIndex = 10;
             this.productViscosityOutput.Value = null;
+            // 
+            // visualizationTimeOutput
+            // 
+            this.visualizationTimeOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.visualizationTimeOutput.Location = new System.Drawing.Point(344, 94);
+            this.visualizationTimeOutput.MeasureUnit = "мс";
+            this.visualizationTimeOutput.Name = "visualizationTimeOutput";
+            this.visualizationTimeOutput.ParameterName = "Время визуализации";
+            this.visualizationTimeOutput.Size = new System.Drawing.Size(335, 85);
+            this.visualizationTimeOutput.TabIndex = 17;
+            this.visualizationTimeOutput.Value = null;
             // 
             // temperaturePlotGroupBox
             // 
@@ -611,17 +622,6 @@
             // saveFileDialog
             // 
             this.saveFileDialog.Filter = "Файлы Excel|*.xlsx";
-            // 
-            // visualizationTimeOutput
-            // 
-            this.visualizationTimeOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.visualizationTimeOutput.Location = new System.Drawing.Point(344, 94);
-            this.visualizationTimeOutput.MeasureUnit = "мс";
-            this.visualizationTimeOutput.Name = "visualizationTimeOutput";
-            this.visualizationTimeOutput.ParameterName = "Время визуализации";
-            this.visualizationTimeOutput.Size = new System.Drawing.Size(335, 85);
-            this.visualizationTimeOutput.TabIndex = 17;
-            this.visualizationTimeOutput.Value = null;
             // 
             // ResearcherForm
             // 

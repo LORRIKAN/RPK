@@ -82,10 +82,11 @@ namespace RPK.Presenter
                     ParameterId: 0,
                     Name: "Шаг решения",
                     Designation: "d",
-                    MeasureUnit: null,
-                    Value: null,
+                    MeasureUnit: "м",
+                    Value: canalLength / 20,
                     LowerBound: 0,
-                    UpperBound: canalLength
+                    UpperBound: canalLength,
+                    ShowBounds: false
                 );
         }
 
