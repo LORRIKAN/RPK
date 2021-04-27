@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using RPK.Model;
 
-namespace RPK.View
+namespace RPK.Researcher.View
 {
     public record Parameter
     {
@@ -67,7 +67,7 @@ namespace RPK.View
                 Value: null,
                 LowerBound: variableParameter.ValueLowerBound,
                 UpperBound: variableParameter.ValueUpperBound,
-                ShowBounds : true
+                ShowBounds: true
             );
         }
     }

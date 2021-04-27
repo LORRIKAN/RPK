@@ -1,6 +1,5 @@
-﻿using RPK.View;
+﻿using RPK.Researcher.View;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static System.Math;
 
-namespace RPK.Presenter
+namespace RPK.Researcher.Presenter
 {
     public class MathModel
     {
@@ -104,7 +103,8 @@ namespace RPK.Presenter
                 try
                 {
                     await CalculateParameterAsync(intermediateResult);
-                } catch { throw; }
+                }
+                catch { throw; }
 
             for (double z = 0; z <= L; z += step)
             {
@@ -163,7 +163,7 @@ namespace RPK.Presenter
         {
             List<Parameter> parameters = new();
 
-            foreach (PropertyInfo parameterProp in this.GetType().GetRuntimeProperties().Where(prop => prop.GetValue(this) is Parameter parameter))
+            foreach (PropertyInfo parameterProp in GetType().GetRuntimeProperties().Where(prop => prop.GetValue(this) is Parameter parameter))
             {
                 parameters.Add((Parameter)parameterProp.GetValue(this));
             }
@@ -177,12 +177,12 @@ namespace RPK.Presenter
 
             qGamma = new IntermediateResult<double>(() => H * W * u0 * Pow(gamma, n + 1));
 
-            qAlpha = new IntermediateResult<double>(() => W * au * ((1 / b) - Tu - Tr));
+            qAlpha = new IntermediateResult<double>(() => W * au * (1 / b - Tu - Tr));
 
-            Qch = new IntermediateResult<double>(() => ((H * W * Vu) / 2) * F);
+            Qch = new IntermediateResult<double>(() => H * W * Vu / 2 * F);
 
-            Ti = new IteratableResult<double>(z => Tr + (1 / b) * Log(((b * qGamma + W * au) / (b * qAlpha)) * (1 - Exp(-(((double)z * b * qAlpha) / (p * c * Qch)))) +
-                    Exp(b * (T0 - Tr - ((double)z * qAlpha) / (p * c * Qch)))));
+            Ti = new IteratableResult<double>(z => Tr + 1 / b * Log((b * qGamma + W * au) / (b * qAlpha) * (1 - Exp(-((double)z * b * qAlpha / (p * c * Qch)))) +
+                    Exp(b * (T0 - Tr - (double)z * qAlpha / (p * c * Qch)))));
 
             Ni = new IteratableResult<double>(z => u0 * Exp(-b * (Ti[z] - Tr)) * Pow(gamma, n - 1));
 
@@ -192,15 +192,15 @@ namespace RPK.Presenter
 
             N = new FinalResult<double>(() => Ni.Values.Last().Value);
 
-            IEnumerable<ResultBase> intermediateResults = this.GetType().GetRuntimeProperties()
+            IEnumerable<ResultBase> intermediateResults = GetType().GetRuntimeProperties()
                 .Where(prop => prop.GetValue(this) is ResultBase and not FinalResultBase)
                 .Select(prop => (ResultBase)prop.GetValue(this));
 
-            IEnumerable<IteratableResultBase> iteratableResults = this.GetType().GetRuntimeProperties()
+            IEnumerable<IteratableResultBase> iteratableResults = GetType().GetRuntimeProperties()
                 .Where(prop => prop.GetValue(this) is IteratableResultBase)
                 .Select(prop => (IteratableResultBase)prop.GetValue(this));
 
-            IEnumerable<FinalResultBase> finalResults = this.GetType().GetRuntimeProperties()
+            IEnumerable<FinalResultBase> finalResults = GetType().GetRuntimeProperties()
                 .Where(prop => prop.GetValue(this) is FinalResultBase)
                 .Select(prop => (FinalResultBase)prop.GetValue(this));
 

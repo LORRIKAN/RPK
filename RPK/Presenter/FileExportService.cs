@@ -1,16 +1,10 @@
-﻿using System;
+﻿using ClosedXML.Excel;
+using RPK.Researcher.View;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
-using RPK.View;
 
-namespace RPK.Presenter
+namespace RPK.Researcher.Presenter
 {
     public class FileExportService
     {

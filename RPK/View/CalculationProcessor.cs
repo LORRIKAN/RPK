@@ -1,13 +1,11 @@
 ﻿#nullable enable
 using RPK.InterfaceElements;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace RPK.View
+namespace RPK.Researcher.View
 {
     public class CalculationProcessor
     {

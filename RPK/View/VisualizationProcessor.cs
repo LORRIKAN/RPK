@@ -1,12 +1,9 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RPK.View
+namespace RPK.Researcher.View
 {
     public class VisualizationProcessor
     {

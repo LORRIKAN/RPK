@@ -1,18 +1,19 @@
 ﻿using RPK.Model;
-using RPK.Repository;
-using RPK.View;
+using RPK.Researcher.Repository;
+using RPK.Researcher.View;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace RPK.Presenter
+namespace RPK.Researcher.Presenter
 {
     public class ResearcherFormPresenter
     {
+        public event Action
+
         public ResearcherForm ResearcherForm { get; set; }
 
         public DatabaseContext Repository { get; set; }

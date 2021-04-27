@@ -1,4 +1,4 @@
-﻿namespace RPK.View
+﻿namespace RPK.Researcher.View
 {
     partial class ResearcherForm
     {

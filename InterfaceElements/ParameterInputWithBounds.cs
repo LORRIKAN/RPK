@@ -36,8 +36,10 @@ namespace RPK.InterfaceElements
         }
 
         private bool boundsAreVisible;
-        public bool BoundsAreVisible { get => boundsAreVisible; 
-            set 
+        public bool BoundsAreVisible
+        {
+            get => boundsAreVisible;
+            set
             {
                 boundsAreVisible = value;
                 if (boundsAreVisible is false)
@@ -50,7 +52,7 @@ namespace RPK.InterfaceElements
                     lowerBoundLabel.Visible = true;
                     upperBoundLabel.Visible = true;
                 }
-            } 
+            }
         }
 
         private Label lowerBoundLabel;

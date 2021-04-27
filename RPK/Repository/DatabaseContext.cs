@@ -3,7 +3,7 @@ using RPK.Model;
 
 #nullable disable
 
-namespace RPK.Repository
+namespace RPK.Researcher.Repository
 {
     public partial class DatabaseContext : DbContext
     {

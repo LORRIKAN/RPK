@@ -1,13 +1,16 @@
-using RPK.Researcher.Presenter;
-using RPK.Researcher.Repository;
-using RPK.Researcher.View;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace RPK
+namespace Login
 {
-    class Program
+    static class Program
     {
+        /// <summary>
+        ///  The main entry point for the application.
+        /// </summary>
         [STAThread]
         static void Main()
         {
