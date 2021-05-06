@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace RPK.InterfaceElements
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     public partial class ParameterInput : UserControl
     {

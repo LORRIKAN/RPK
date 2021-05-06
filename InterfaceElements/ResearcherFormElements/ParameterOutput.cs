@@ -1,12 +1,14 @@
 ﻿#nullable enable
 
-namespace RPK.InterfaceElements
+using RPK;
+
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     public class ParameterOutput : ParameterInput
     {
         public ParameterOutput()
         {
-            base.InputTextBox.Enabled = false;
+            InputTextBox.Enabled = false;
         }
     }
 }

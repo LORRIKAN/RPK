@@ -1,8 +1,11 @@
+using RPK.Researcher.Presenter;
+using RPK.Researcher.View;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RPK.Login.View;
 
 namespace Login
 {
@@ -18,8 +21,7 @@ namespace Login
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Application.Run(new ResearcherFormPresenter(new ResearcherForm(), new DatabaseContext(), new MathModel(),
-                new FileExportService()).Run());
+            Application.Run(new LoginForm());
         }
     }
 }

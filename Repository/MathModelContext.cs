@@ -1,17 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RPK.Model;
+using RPK.Model.MathModel;
 
 #nullable disable
 
-namespace RPK.Researcher.Repository
+namespace RPK.Repository.MathModel
 {
-    public partial class DatabaseContext : DbContext
+    public partial class MathModelContext : DbContext
     {
-        public DatabaseContext()
+        public MathModelContext()
         {
         }
 
-        public DatabaseContext(DbContextOptions<DatabaseContext> options)
+        public MathModelContext(DbContextOptions<MathModelContext> options)
             : base(options)
         {
         }
@@ -29,7 +29,7 @@ namespace RPK.Researcher.Repository
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite("DataSource=Repository\\Database.db").UseLazyLoadingProxies();
+                optionsBuilder.UseSqlite("DataSource=MathModel.db").UseLazyLoadingProxies();
             }
         }
 

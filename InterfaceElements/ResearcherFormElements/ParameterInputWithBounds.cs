@@ -1,7 +1,7 @@
 ﻿using RPK.DataValidation;
 using System.Windows.Forms;
 
-namespace RPK.InterfaceElements
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     public partial class ParameterInputWithBounds : ParameterInput
     {

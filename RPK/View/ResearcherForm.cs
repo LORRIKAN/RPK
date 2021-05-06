@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using RPK.InterfaceElements;
-using RPK.Model;
+using RPK.InterfaceElements.ResearcherFormElements;
+using RPK.Model.MathModel;
 using ScottPlot;
 using ScottPlot.Plottable;
 using System;

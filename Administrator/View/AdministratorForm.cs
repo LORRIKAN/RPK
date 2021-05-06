@@ -8,14 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Login
+namespace RPK.Administrator.View
 {
-    public partial class Form1 : Form
+    public partial class AdministratorForm : Form
     {
-        public Form1()
+        public AdministratorForm()
         {
             InitializeComponent();
         }
-
     }
 }

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace RPK.InterfaceElements
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     public class ExportDialog
     {

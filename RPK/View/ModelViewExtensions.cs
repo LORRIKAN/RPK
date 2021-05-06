@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using RPK.Model;
+using RPK.Model.MathModel;
 
 namespace RPK.Researcher.View
 {
@@ -39,7 +40,7 @@ namespace RPK.Researcher.View
             return InitializeParameter(canalGeometryParameter.Parameter, canalGeometryParameter.ParameterValue);
         }
 
-        private static Parameter InitializeParameter(Model.Parameter modelParameter, object? parameterValue)
+        private static Parameter InitializeParameter(Model.MathModel.Parameter modelParameter, object? parameterValue)
         {
             return new Parameter
             (

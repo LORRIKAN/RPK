@@ -1,4 +1,6 @@
-﻿namespace RPK.Researcher.View
+﻿using RPK.InterfaceElements.ResearcherFormElements;
+
+namespace RPK.Researcher.View
 {
     partial class ResearcherForm
     {
@@ -36,9 +38,9 @@
             this.materialPropertiesGroupBox = new System.Windows.Forms.GroupBox();
             this.materialPropertiesLayout = new System.Windows.Forms.TableLayoutPanel();
             this.canalChooseGroupBox = new System.Windows.Forms.GroupBox();
-            this.canalChooseComboBox = new RPK.InterfaceElements.CustomComboBox();
+            this.canalChooseComboBox = new RPK.InterfaceElements.ResearcherFormElements.CustomComboBox();
             this.materialChooseGroupBox = new System.Windows.Forms.GroupBox();
-            this.materialChooseComboBox = new RPK.InterfaceElements.CustomComboBox();
+            this.materialChooseComboBox = new RPK.InterfaceElements.ResearcherFormElements.CustomComboBox();
             this.canalGeometryParametersGroupBox = new System.Windows.Forms.GroupBox();
             this.canalGeometryParametersLayout = new System.Windows.Forms.TableLayoutPanel();
             this.variableParametersPage = new System.Windows.Forms.TabPage();
@@ -57,12 +59,12 @@
             this.temperatureColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.viscosityColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.discreteResultsLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.canalProductivityOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.calculationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.programOccupiedRAMOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.productTemperatureOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.productViscosityOutput = new RPK.InterfaceElements.ParameterOutput();
-            this.visualizationTimeOutput = new RPK.InterfaceElements.ParameterOutput();
+            this.canalProductivityOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
+            this.calculationTimeOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
+            this.programOccupiedRAMOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
+            this.productTemperatureOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
+            this.productViscosityOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
+            this.visualizationTimeOutput = new RPK.InterfaceElements.ResearcherFormElements.ParameterOutput();
             this.temperaturePlotGroupBox = new System.Windows.Forms.GroupBox();
             this.temperaturePlot = new ScottPlot.FormsPlot();
             this.viscosityPlotGroupBox = new System.Windows.Forms.GroupBox();
@@ -697,19 +699,19 @@
         private System.Windows.Forms.TableLayoutPanel variableParametersLayout;
         private System.Windows.Forms.TableLayoutPanel empiricalCoefficientsOfMathModelLayout;
         private System.ComponentModel.BackgroundWorker backgroundInputControlsFiller;
-        private InterfaceElements.CustomComboBox canalChooseComboBox;
-        private InterfaceElements.CustomComboBox materialChooseComboBox;
+        private CustomComboBox canalChooseComboBox;
+        private CustomComboBox materialChooseComboBox;
         private System.Windows.Forms.GroupBox temperaturePlotGroupBox;
         private ScottPlot.FormsPlot temperaturePlot;
         private System.Windows.Forms.GroupBox viscosityPlotGroupBox;
         private ScottPlot.FormsPlot viscosityPlot;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
-        private InterfaceElements.ParameterOutput canalProductivityOutput;
-        private InterfaceElements.ParameterOutput calculationTimeOutput;
-        private InterfaceElements.ParameterOutput programOccupiedRAMOutput;
-        private InterfaceElements.ParameterOutput productTemperatureOutput;
-        private InterfaceElements.ParameterOutput productViscosityOutput;
-        private InterfaceElements.ParameterOutput visualizationTimeOutput;
+        private ParameterOutput canalProductivityOutput;
+        private ParameterOutput calculationTimeOutput;
+        private ParameterOutput programOccupiedRAMOutput;
+        private ParameterOutput productTemperatureOutput;
+        private ParameterOutput productViscosityOutput;
+        private ParameterOutput visualizationTimeOutput;
     }
 }
 

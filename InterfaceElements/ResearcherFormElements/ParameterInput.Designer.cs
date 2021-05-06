@@ -1,5 +1,5 @@
 ﻿
-namespace RPK.InterfaceElements
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     partial class ParameterInput
     {

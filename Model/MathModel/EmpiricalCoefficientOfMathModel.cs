@@ -1,8 +1,10 @@
 ﻿#nullable disable
 
-namespace RPK.Model
+using RPK;
+
+namespace RPK.Model.MathModel
 {
-    public partial class ParameterOfMaterialProperty
+    public partial class EmpiricalCoefficientOfMathModel
     {
         public long ParameterId { get; set; }
         public long MaterialId { get; set; }

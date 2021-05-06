@@ -4,6 +4,16 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>RPK</AssemblyName>
+    <RootNamespace>RPK.Login</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Administrator\Administrator.csproj" />
+    <ProjectReference Include="..\InterfaceElements\InterfaceElements.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
+    <ProjectReference Include="..\Repository\Repository.csproj" />
+    <ProjectReference Include="..\RPK\Researcher.csproj" />
+  </ItemGroup>
 
 </Project>

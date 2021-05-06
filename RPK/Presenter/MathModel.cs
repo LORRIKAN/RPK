@@ -177,12 +177,13 @@ namespace RPK.Researcher.Presenter
 
             qGamma = new IntermediateResult<double>(() => H * W * u0 * Pow(gamma, n + 1));
 
-            qAlpha = new IntermediateResult<double>(() => W * au * (1 / b - Tu - Tr));
+            qAlpha = new IntermediateResult<double>(() => W * au * (1 / b - Tu + Tr));
 
-            Qch = new IntermediateResult<double>(() => H * W * Vu / 2 * F);
+            Qch = new IntermediateResult<double>(() => ((H * W * Vu) / 2) * F);
 
-            Ti = new IteratableResult<double>(z => Tr + 1 / b * Log((b * qGamma + W * au) / (b * qAlpha) * (1 - Exp(-((double)z * b * qAlpha / (p * c * Qch)))) +
-                    Exp(b * (T0 - Tr - (double)z * qAlpha / (p * c * Qch)))));
+            Ti = new IteratableResult<double>(z => Tr + (1 / b) * Log((b * qGamma + W * au) / (b * qAlpha) * 
+                (1 - Exp(-(((double)z * b * qAlpha) / (p * c * Qch)))) +
+                Exp(b * (T0 - Tr - ((double)z * qAlpha) / (p * c * Qch)))));
 
             Ni = new IteratableResult<double>(z => u0 * Exp(-b * (Ti[z] - Tr)) * Pow(gamma, n - 1));
 

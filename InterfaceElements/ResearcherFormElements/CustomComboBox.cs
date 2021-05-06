@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace RPK.InterfaceElements
+namespace RPK.InterfaceElements.ResearcherFormElements
 {
     public class CustomComboBox : ComboBox
     {
         public CustomComboBox()
         {
 
-            base.SelectedIndexChanged += (sender, e) =>
+            SelectedIndexChanged += (sender, e) =>
             {
-                if (this.SelectedIndex != PreviousSelectedIndex)
+                if (SelectedIndex != PreviousSelectedIndex)
                 {
-                    this.NewIndexSelected?.Invoke(sender, e);
-                    this.PreviousSelectedIndex = this.SelectedIndex;
+                    NewIndexSelected?.Invoke(sender, e);
+                    PreviousSelectedIndex = SelectedIndex;
                 }
             };
         }

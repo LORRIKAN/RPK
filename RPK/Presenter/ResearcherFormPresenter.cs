@@ -1,5 +1,5 @@
-﻿using RPK.Model;
-using RPK.Researcher.Repository;
+﻿using RPK.Model.MathModel;
+using RPK.Repository.MathModel;
 using RPK.Researcher.View;
 using System;
 using System.Collections.Generic;
@@ -12,11 +12,10 @@ namespace RPK.Researcher.Presenter
 {
     public class ResearcherFormPresenter
     {
-        public event Action
 
         public ResearcherForm ResearcherForm { get; set; }
 
-        public DatabaseContext Repository { get; set; }
+        public MathModelContext Repository { get; set; }
 
         public MathModel MathModel { get; set; }
 
@@ -24,7 +23,7 @@ namespace RPK.Researcher.Presenter
 
         private IEnumerable<View.Parameter> Parameters { get; set; }
 
-        public ResearcherFormPresenter(ResearcherForm researcherForm, DatabaseContext repository, MathModel mathModel,
+        public ResearcherFormPresenter(ResearcherForm researcherForm, MathModelContext repository, MathModel mathModel,
             FileExportService fileExportService)
         {
             FileExportService = fileExportService;

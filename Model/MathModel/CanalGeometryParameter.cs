@@ -1,14 +1,16 @@
 ﻿#nullable disable
 
-namespace RPK.Model
+using RPK;
+
+namespace RPK.Model.MathModel
 {
-    public partial class EmpiricalCoefficientOfMathModel
+    public partial class CanalGeometryParameter
     {
+        public long CanalId { get; set; }
         public long ParameterId { get; set; }
-        public long MaterialId { get; set; }
         public double ParameterValue { get; set; }
 
-        public virtual Material Material { get; set; }
+        public virtual Canal Canal { get; set; }
         public virtual Parameter Parameter { get; set; }
     }
 }

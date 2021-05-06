@@ -1,6 +1,4 @@
-﻿#nullable disable
-
-namespace RPK.Model
+﻿namespace RPK.Model.MathModel
 {
     public partial class VariableParameter
     {
