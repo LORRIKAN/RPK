@@ -58,6 +58,7 @@ namespace RPK.Login.View
             // 
             this.passwordTextBox.Location = new System.Drawing.Point(222, 134);
             this.passwordTextBox.Name = "passwordTextBox";
+            this.passwordTextBox.PasswordChar = '*';
             this.passwordTextBox.Size = new System.Drawing.Size(195, 31);
             this.passwordTextBox.TabIndex = 2;
             this.passwordTextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBox_KeyUp);

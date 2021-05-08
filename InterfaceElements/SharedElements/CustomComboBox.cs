@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace RPK.InterfaceElements.ResearcherFormElements
+namespace RPK.InterfaceElements.SharedElements
 {
     public class CustomComboBox : ComboBox
     {

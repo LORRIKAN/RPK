@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace RPK.Model.Users
 {
-    public partial class Role
+    public partial class Role : IEquatable<Role>
     {
         public Role()
         {
@@ -13,8 +13,34 @@ namespace RPK.Model.Users
         }
 
         public long RoleId { get; set; }
-        public string Role1 { get; set; }
+        public string RoleName { get; set; }
 
         public virtual ICollection<User> Users { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Role);
+        }
+
+        public bool Equals(Role other)
+        {
+            return other != null &&
+                   RoleId == other.RoleId;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(RoleId);
+        }
+
+        public static bool operator ==(Role left, Role right)
+        {
+            return EqualityComparer<Role>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Role left, Role right)
+        {
+            return !(left == right);
+        }
     }
 }

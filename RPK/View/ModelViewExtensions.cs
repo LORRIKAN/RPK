@@ -1,12 +1,11 @@
 ﻿#nullable enable
-using RPK.Model;
 using RPK.Model.MathModel;
 
 namespace RPK.Researcher.View
 {
     public record Parameter
     {
-        public Parameter(long? parameterId, string name, string designation, string measureUnit, object? value)
+        public Parameter(long? parameterId, string name, string designation, string? measureUnit, object? value)
         {
             ParameterId = parameterId;
             Name = name;
@@ -21,7 +20,7 @@ namespace RPK.Researcher.View
 
         public string Designation { get; init; }
 
-        public string MeasureUnit { get; init; }
+        public string? MeasureUnit { get; init; }
 
         public object? Value { get; set; }
 
@@ -71,12 +70,5 @@ namespace RPK.Researcher.View
                 ShowBounds: true
             );
         }
-    }
-
-    public static class ToStringExtensions
-    {
-        public static string ToString(this Material material) => material.Name;
-
-        public static string ToString(this Canal canal) => canal.Brand;
     }
 }

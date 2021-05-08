@@ -1,4 +1,5 @@
-﻿using RPK.Model.MathModel;
+﻿using RPK.Presenter;
+using RPK.Model.MathModel;
 using RPK.Repository.MathModel;
 using RPK.Researcher.View;
 using System;
@@ -7,24 +8,26 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RPK.Model.Users;
 
 namespace RPK.Researcher.Presenter
 {
-    public class ResearcherFormPresenter
+    public class ResearcherPresenter : RolePresenterBase
     {
+        private ResearcherForm ResearcherForm { get; set; }
 
-        public ResearcherForm ResearcherForm { get; set; }
+        public override Form Form { get => ResearcherForm; }
 
-        public MathModelContext Repository { get; set; }
+        private MathModelContext Repository { get; set; }
 
-        public MathModel MathModel { get; set; }
+        private MathModel MathModel { get; set; }
 
-        public FileExportService FileExportService { get; set; }
+        private FileExportService FileExportService { get; set; }
 
         private IEnumerable<View.Parameter> Parameters { get; set; }
 
-        public ResearcherFormPresenter(ResearcherForm researcherForm, MathModelContext repository, MathModel mathModel,
-            FileExportService fileExportService)
+        public ResearcherPresenter(ResearcherForm researcherForm, MathModelContext repository, MathModel mathModel,
+            FileExportService fileExportService, Role role)
         {
             FileExportService = fileExportService;
             Repository = repository;
@@ -36,9 +39,12 @@ namespace RPK.Researcher.Presenter
             ResearcherForm.SetSolvingParameters += ResearcherForm_SetSolvingParameters;
             ResearcherForm.CalculationRequiredAsync += ResearcherForm_CalculationRequiredAsync;
             ResearcherForm.ExportToFileAsync += ResearcherForm_ExportToFileAsync;
-
             ResearcherForm.SetAllocatedMemory += ResearcherForm_SetAllocatedMemory;
+
+            Role = role;
         }
+
+        public override event Action ReloginRequired;
 
         private async Task<bool> ResearcherForm_ExportToFileAsync(DataToExport dataToExport, string filePath)
         {
@@ -97,10 +103,11 @@ namespace RPK.Researcher.Presenter
                     variableParameter.CanalId == canal.CanalId);
         }
 
-        public Form Run()
+        public override Form Run()
         {
             ResearcherForm.SetInitialData(Repository.Canals, Repository.Materials);
-            return ResearcherForm;
+            ResearcherForm.ReloginRequired += ReloginRequired;
+            return base.Run();
         }
     }
 }

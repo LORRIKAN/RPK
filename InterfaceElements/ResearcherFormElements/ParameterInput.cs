@@ -41,30 +41,33 @@ namespace RPK.InterfaceElements.ResearcherFormElements
         [Browsable(false)]
         public GroupBox GroupBox => groupBox;
 
-        DataParserAndValidatorBase validator = new DoubleTypeParameterParserAndValidator();
+        DataParserAndValidatorBase? validator;
         [Browsable(false)]
         [ReadOnly(true)]
-        public DataParserAndValidatorBase Validator
+        public DataParserAndValidatorBase? Validator
         {
             get => validator;
             set
             {
                 validator = value;
 
+                if (validator is null)
+                    return;
+
                 validator.Validated += Validator_Validated;
                 validator.Invalidated += Validator_Invalidated;
             }
         }
 
-        private object? value;
-        public object? Value
+        protected object? value;
+        public virtual object? Value
         {
             get => value; set
             {
                 this.value = value;
                 InputTextBox.Text = this.value?.ToString();
                 if (string.IsNullOrEmpty(InputTextBox.Text) is false && InputTextBox.Text is not null)
-                    Validator.ValidateParameter(InputTextBox.Text);
+                    Validator?.ValidateParameter(InputTextBox.Text);
             }
         }
 
@@ -74,7 +77,7 @@ namespace RPK.InterfaceElements.ResearcherFormElements
 
         [Browsable(false)]
         [ReadOnly(true)]
-        public ParameterInputStatus ParameterInputStatus { get; private set; } = ParameterInputStatus.IsNullOrEmpty;
+        public ParameterInputStatus ParameterInputStatus { get; protected set; } = ParameterInputStatus.IsNullOrEmpty;
 
         protected void TextBox_Validating(object sender, CancelEventArgs e)
         {

@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 using RPK.Model.Users;
 
 #nullable disable
@@ -35,7 +33,7 @@ namespace RPK.Repository.Users
             {
                 entity.ToTable("Role");
 
-                entity.Property(e => e.Role1)
+                entity.Property(e => e.RoleName)
                     .IsRequired()
                     .HasColumnName("Role");
             });

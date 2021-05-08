@@ -1,4 +1,5 @@
 ﻿using RPK.InterfaceElements.ResearcherFormElements;
+using RPK.InterfaceElements.SharedElements;
 
 namespace RPK.Researcher.View
 {
@@ -38,9 +39,9 @@ namespace RPK.Researcher.View
             this.materialPropertiesGroupBox = new System.Windows.Forms.GroupBox();
             this.materialPropertiesLayout = new System.Windows.Forms.TableLayoutPanel();
             this.canalChooseGroupBox = new System.Windows.Forms.GroupBox();
-            this.canalChooseComboBox = new RPK.InterfaceElements.ResearcherFormElements.CustomComboBox();
+            this.canalChooseComboBox = new RPK.InterfaceElements.SharedElements.CustomComboBox();
             this.materialChooseGroupBox = new System.Windows.Forms.GroupBox();
-            this.materialChooseComboBox = new RPK.InterfaceElements.ResearcherFormElements.CustomComboBox();
+            this.materialChooseComboBox = new RPK.InterfaceElements.SharedElements.CustomComboBox();
             this.canalGeometryParametersGroupBox = new System.Windows.Forms.GroupBox();
             this.canalGeometryParametersLayout = new System.Windows.Forms.TableLayoutPanel();
             this.variableParametersPage = new System.Windows.Forms.TabPage();
@@ -73,7 +74,7 @@ namespace RPK.Researcher.View
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportResultsStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.changeAccountStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reloginStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.calculateStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -574,7 +575,7 @@ namespace RPK.Researcher.View
             // 
             this.fileStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportResultsStripMenuItem,
-            this.changeAccountStripMenuItem,
+            this.reloginStripMenuItem,
             this.exitStripMenuItem});
             this.fileStripMenuItem.Name = "fileStripMenuItem";
             this.fileStripMenuItem.Size = new System.Drawing.Size(69, 29);
@@ -587,11 +588,11 @@ namespace RPK.Researcher.View
             this.exportResultsStripMenuItem.Size = new System.Drawing.Size(344, 34);
             this.exportResultsStripMenuItem.Text = "Экспортировать результаты";
             // 
-            // changeAccountStripMenuItem
+            // reloginStripMenuItem
             // 
-            this.changeAccountStripMenuItem.Name = "changeAccountStripMenuItem";
-            this.changeAccountStripMenuItem.Size = new System.Drawing.Size(344, 34);
-            this.changeAccountStripMenuItem.Text = "Сменить учётную запись";
+            this.reloginStripMenuItem.Name = "reloginStripMenuItem";
+            this.reloginStripMenuItem.Size = new System.Drawing.Size(344, 34);
+            this.reloginStripMenuItem.Text = "Сменить учётную запись";
             // 
             // exitStripMenuItem
             // 
@@ -681,7 +682,7 @@ namespace RPK.Researcher.View
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportResultsStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem changeAccountStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reloginStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem calculateStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpStripMenuItem;

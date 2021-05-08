@@ -17,7 +17,7 @@ namespace RPK.Researcher.View
 
         private Task? VisualizationTask { get; set; }
 
-        public async Task StartVisualization(CalculationResults calculationResults)
+        public async Task VisualizeAsync(CalculationResults calculationResults)
         {
             CancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = CancellationTokenSource.Token;

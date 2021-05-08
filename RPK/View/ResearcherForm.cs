@@ -1,6 +1,6 @@
 ﻿#nullable enable
-using RPK.InterfaceElements;
 using RPK.InterfaceElements.ResearcherFormElements;
+using RPK.InterfaceElements.SharedElements;
 using RPK.Model.MathModel;
 using ScottPlot;
 using ScottPlot.Plottable;
@@ -19,6 +19,9 @@ namespace RPK.Researcher.View
 
     public partial class ResearcherForm : Form
     {
+        private const string temperaturePlotName = "График распределения температуры по длине канала";
+
+        private const string viscosityPlotName = "График распределения вязкости по длине канала";
         public ResearcherForm()
         {
             InitializeComponent();
@@ -34,12 +37,12 @@ namespace RPK.Researcher.View
             InputPagesStatuses.Add(variableParametersPage, TabPageStatus.Incomplete);
             InputPagesStatuses.Add(mathModelParametersPage, TabPageStatus.Incomplete);
 
-            temperaturePlot.Plot.Title("График распределения температуры по длине канала");
+            temperaturePlot.Plot.Title(temperaturePlotName);
             temperaturePlot.Plot.XLabel("Координата по длине канала (м)");
             temperaturePlot.Plot.YLabel("Температура материала (°C)");
             temperaturePlot.Render();
 
-            viscosityPlot.Plot.Title("График распределения вязкости по длине канала");
+            viscosityPlot.Plot.Title(viscosityPlotName);
             viscosityPlot.Plot.XLabel("Координата по длине канала (м)");
             viscosityPlot.Plot.YLabel("Вязкость материала (Па⋅с)");
             viscosityPlot.Render();
@@ -55,10 +58,22 @@ namespace RPK.Researcher.View
 
             exportResultsStripMenuItem.Click += ExportResultsStripMenuItem_Click;
 
-            InitializeMemoryOutput();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
+
+            this.FormClosing += (sender, e) => cancellationTokenSource.Cancel();
+
+            reloginStripMenuItem.Click += (sender, e) =>
+            {
+                cancellationTokenSource.Cancel();
+                ReloginRequired?.Invoke();
+            };
+
+            this.Shown += (sender, e) => InitializeMemoryOutput(cancellationToken);
         }
 
-        private async void ExportResultsStripMenuItem_Click(object? sender, EventArgs e)
+        private void ExportResultsStripMenuItem_Click(object? sender, EventArgs e)
         {
             exportResultsStripMenuItem.Enabled = false;
             calculateStripMenuItem.Enabled = false;
@@ -67,63 +82,23 @@ namespace RPK.Researcher.View
                 return;
 
             string filePath = saveFileDialog.FileName;
+            var discreteOutputParameters = new Dictionary<string, IList<Parameter>>();
 
-            //temperaturePlot.Plot.Legend(false);
-            //viscosityPlot.Plot.Legend(false);
-
-            //TemperatureHLine.IsVisible = false;
-            //TemperatureVLine.IsVisible = false;
-
-            //ViscosityHLine.IsVisible = false;
-            //ViscosityVLine.IsVisible = false;
-
-            //temperaturePlot.Plot.Style(Style.Light1);
-            //viscosityPlot.Plot.Style(Style.Light1);
-
-            //temperaturePlot.Plot.Title("График распределения температуры по длине канала");
-            //viscosityPlot.Plot.Title("График распределения вязкости по длине канала");
-
-            //temperaturePlot.Plot.AxisAuto();
-            //viscosityPlot.Plot.AxisAuto();
-
-            //DataToExport.TemperaturePlot = temperaturePlot.Plot.Render();
-            //DataToExport.ViscosityPlot = viscosityPlot.Plot.Render();
-
-            //temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}(визуализация завершена)");
-            //viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}(визуализация завершена)");
-
-            //temperaturePlot.Plot.Legend(true);
-            //viscosityPlot.Plot.Legend(true);
-
-            //TemperatureHLine.IsVisible = true;
-            //TemperatureVLine.IsVisible = true;
-
-            //ViscosityHLine.IsVisible = true;
-            //ViscosityVLine.IsVisible = true;
-
-            //temperaturePlot.Render();
-            //viscosityPlot.Render();
-
-            await Task.Run(() =>
-            {
-                var discreteOutputParameters = new Dictionary<string, IList<Parameter>>();
-
-                discreteOutputParameters.Add("Производительность канала", new[] { new Parameter(null,
+            discreteOutputParameters.Add("Производительность канала", new[] { new Parameter(null,
                     canalProductivityOutput.ParameterName, string.Empty,
-                    canalProductivityOutput.MeasureUnit ?? string.Empty,
+                    canalProductivityOutput.MeasureUnit,
                     canalProductivityOutput.Value)});
 
-                discreteOutputParameters.Add("Показатели качества", new List<ParameterOutput> { productTemperatureOutput,
+            discreteOutputParameters.Add("Показатели качества", new List<ParameterOutput> { productTemperatureOutput,
                     productViscosityOutput}
-                .Select(po => new Parameter(null, po.ParameterName, string.Empty, po.MeasureUnit ?? string.Empty, po.Value)).ToArray());
+            .Select(po => new Parameter(null, po.ParameterName, string.Empty, po.MeasureUnit, po.Value)).ToArray());
 
-                DataToExport.DiscreteOutputParameters = discreteOutputParameters;
+            DataToExport.DiscreteOutputParameters = discreteOutputParameters;
 
-                DataToExport.ContiniousResults = LastCalculatedResults.ResultsTable
-                    .Select(t => (new Parameter(null, "Координата по длине канала", string.Empty, "м", t.coordinate),
-                        new Parameter(null, "Температура", string.Empty, "°C", t.tempreture),
-                        new Parameter(null, "Вязкость", string.Empty, "Па⋅c", t.viscosity))).ToArray();
-            });
+            DataToExport.ContiniousResults = LastCalculatedResults.ResultsTable
+                .Select(t => (new Parameter(null, "Координата по длине канала", string.Empty, "м", t.coordinate),
+                    new Parameter(null, "Температура", string.Empty, "°C", t.tempreture),
+                    new Parameter(null, "Вязкость", string.Empty, "Па⋅c", t.viscosity))).ToArray();
 
             var exportDialog = new ExportDialog();
             exportDialog.GetExportStatusAsync += async () =>
@@ -137,7 +112,6 @@ namespace RPK.Researcher.View
 
                 if (success is true)
                     return ExportStatus.FinishedSuccessfully;
-
                 else
                     return ExportStatus.FinishedWithError;
             };
@@ -148,32 +122,31 @@ namespace RPK.Researcher.View
             calculateStripMenuItem.Enabled = true;
         }
 
-        private void InitializeMemoryOutput()
+        private void InitializeMemoryOutput(CancellationToken cancellationToken)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
-
-            this.FormClosing += (sender, e) => cancellationTokenSource.Cancel();
-
             OutputAllocatedMemory(cancellationToken);
         }
 
-        private async void OutputAllocatedMemory(CancellationToken outputMemoryCancellationToken)
+        private void OutputAllocatedMemory(CancellationToken outputMemoryCancellationToken)
         {
-            while (true)
+            Task.Run(async () =>
             {
-                try
+                while (true)
                 {
-                    await Task.Delay(500, outputMemoryCancellationToken);
-
-                    this.Invoke(new MethodInvoker(() =>
+                    try
                     {
-                        programOccupiedRAMOutput.Value = SetAllocatedMemory?.Invoke() / (1024 * 1024);
-                    }));
+                        await Task.Delay(500, outputMemoryCancellationToken);
+
+                        long? allocatedMemory = SetAllocatedMemory?.Invoke() / (1024 * 1024);
+
+                        this.Invoke(new MethodInvoker(() =>
+                        {
+                            programOccupiedRAMOutput.Value = allocatedMemory;
+                        }));
+                    }
+                    catch (TaskCanceledException) { return; }
                 }
-                catch (TaskCanceledException) { return; }
-                catch { continue; }
-            }
+            }, outputMemoryCancellationToken);
         }
 
         private void ComboBox_NewIndexSelected(object? sender, EventArgs e)
@@ -193,6 +166,8 @@ namespace RPK.Researcher.View
         private Queue<(ComboBox comboBox, EventArgs e)> InputControlsFillerAwaiters { get; set; } = new();
 
         public event Func<Material, Canal, IEnumerable<VariableParameter>>? SetVariableParameters;
+
+        public event Action? ReloginRequired;
 
         public event Func<Material, Canal, IEnumerable<Parameter>>? SetSolvingParameters;
 
@@ -541,13 +516,14 @@ namespace RPK.Researcher.View
             if (taskDialogResult is TaskDialogResult.ShowResults)
                 tabControl.SelectedTab = resultsPage;
 
-            await VisualizationProcessor.StartVisualization(calculationResults);
+            await VisualizationProcessor.VisualizeAsync(calculationResults);
         }
 
         private void PrepareOutputControls()
         {
             IEnumerable<ParameterOutput> parameterOutputs = FindAllChildControls<ParameterOutput>(resultsPage.Controls);
 
+            reloginStripMenuItem.Enabled = false;
             exportResultsStripMenuItem.Enabled = false;
 
             foreach (ParameterOutput parameterOutput in parameterOutputs)
@@ -562,8 +538,8 @@ namespace RPK.Researcher.View
             temperaturePlotGroupBox.Text = string.Empty;
             viscosityPlotGroupBox.Text = string.Empty;
 
-            temperaturePlot.Plot.Title($"График распределения температуры по длине канала");
-            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала");
+            temperaturePlot.Plot.Title(temperaturePlotName);
+            viscosityPlot.Plot.Title(viscosityPlotName);
 
             resultsGrid.Rows.Clear();
             resultsTableGroupBox.Text = ($"Таблица результатов");
@@ -579,8 +555,8 @@ namespace RPK.Researcher.View
 
         private void OnVisualizationFinished(CalculationResults calculationResults)
         {
-            temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}(визуализация завершена)");
-            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}(визуализация завершена)");
+            temperaturePlot.Plot.Title($"График распределения температуры по длине канала{Environment.NewLine}");
+            viscosityPlot.Plot.Title($"График распределения вязкости по длине канала{Environment.NewLine}");
 
             temperaturePlot.Plot.AxisAuto();
             viscosityPlot.Plot.AxisAuto();
@@ -593,9 +569,10 @@ namespace RPK.Researcher.View
             viscosityPlot.Enabled = true;
             temperaturePlot.Enabled = true;
 
-            resultsTableGroupBox.Text = ($"Таблица результатов (визуализация завершена)");
+            resultsTableGroupBox.Text = ($"Таблица результатов");
 
             exportResultsStripMenuItem.Enabled = true;
+            reloginStripMenuItem.Enabled = true;
         }
 
         private void InitializePlotsLines()

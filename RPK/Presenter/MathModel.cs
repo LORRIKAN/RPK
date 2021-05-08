@@ -181,7 +181,7 @@ namespace RPK.Researcher.Presenter
 
             Qch = new IntermediateResult<double>(() => ((H * W * Vu) / 2) * F);
 
-            Ti = new IteratableResult<double>(z => Tr + (1 / b) * Log((b * qGamma + W * au) / (b * qAlpha) * 
+            Ti = new IteratableResult<double>(z => Tr + (1 / b) * Log((b * qGamma + W * au) / (b * qAlpha) *
                 (1 - Exp(-(((double)z * b * qAlpha) / (p * c * Qch)))) +
                 Exp(b * (T0 - Tr - ((double)z * qAlpha) / (p * c * Qch)))));
 
