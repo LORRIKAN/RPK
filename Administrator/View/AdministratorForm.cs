@@ -19,6 +19,8 @@ namespace RPK.Administrator.View
 
         public event Func<(string contextName, string entityName), IAsyncEnumerable<ValidationResult>> ValidateEntity;
 
+        public event Func<bool> AddRow;
+
         public AdministratorForm()
         {
             InitializeComponent();
@@ -26,11 +28,20 @@ namespace RPK.Administrator.View
             this.Shown += LoadData;
 
             dataGridView.DataError += DataGridView_DataError;
+
+            addButt.Click += AddButt_Click;
+        }
+
+        private void AddButt_Click(object sender, EventArgs e)
+        {
+            AddRow();
+            addButt.Enabled = false;
+            saveButt.Enabled = false;
         }
 
         private void DataGridView_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            
+            e.Cancel = true;
         }
 
         private void LoadData(object sender, EventArgs e)
@@ -52,13 +63,38 @@ namespace RPK.Administrator.View
         {
             dataGridView.Rows[e.RowIndex].ErrorText = null;
 
-            await foreach (ValidationResult error in ValidateEntity((dbChooseComboBox.Text, tableChooseComboBox.Text)))
+            try
             {
-                dataGridView.Rows[e.RowIndex].ErrorText += error.ErrorMessage;
+                await foreach (ValidationResult error in ValidateEntity((dbChooseComboBox.Text, tableChooseComboBox.Text)))
+                {
+                    dataGridView.Rows[e.RowIndex].ErrorText += error?.ErrorMessage;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                dataGridView.Rows[e.RowIndex].ErrorText += "В этой записи данный параметр изменить нельзя.";
             }
 
             if (!string.IsNullOrEmpty(dataGridView.Rows[e.RowIndex].ErrorText))
+            {
                 e.Cancel = true;
+
+                saveButt.Enabled = false;
+                addButt.Enabled = false;
+            }
+            else if (e.RowIndex)
+            {
+                saveButt.Enabled = true;
+                addButt.Enabled = true;
+            }
         }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            e.Cancel = false;
+            base.OnClosing(e);
+        }
+
+        private int LastAddedRowIndex { get; set; }
     }
 }

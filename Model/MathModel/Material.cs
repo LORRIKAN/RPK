@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable disable
 
@@ -17,9 +18,10 @@ namespace RPK.Model.MathModel
             VariableParameters = new HashSet<VariableParameter>();
         }
 
+        [Column("MaterialId")]
         [Display(Name = "Идентификатор материала")]
         [ReadOnly(true)]
-        public long MaterialId { get; set; }
+        public long Id { get; set; }
 
         [Display(Name = "Наименование материала")]
         [Required]
@@ -42,12 +44,12 @@ namespace RPK.Model.MathModel
         public bool Equals(Material other)
         {
             return other != null &&
-                   MaterialId == other.MaterialId;
+                   Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(MaterialId);
+            return HashCode.Combine(Id);
         }
 
         public override string ToString()

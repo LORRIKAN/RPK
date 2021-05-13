@@ -99,8 +99,8 @@ namespace RPK.Researcher.Presenter
         private IEnumerable<VariableParameter> ResearcherForm_SetVariableParameters(Material material, Canal canal)
         {
             return Repository.VariableParameters
-                .Where(variableParameter => variableParameter.MaterialId == material.MaterialId &&
-                    variableParameter.CanalId == canal.CanalId);
+                .Where(variableParameter => variableParameter.MaterialId == material.Id &&
+                    variableParameter.CanalId == canal.Id);
         }
 
         public override Form Run()

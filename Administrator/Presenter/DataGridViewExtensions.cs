@@ -66,7 +66,7 @@ namespace RPK.Administrator.Presenter
                             .FirstOrDefault()?.Name ?? p.DisplayName,
                             ReadOnly = p.IsReadOnly,
                             Type = p.PropertyType,
-                            Dependment = dependment
+                            Dependency = dependment
                         };
                     });
 
@@ -74,13 +74,13 @@ namespace RPK.Administrator.Presenter
                 {
                     DataGridViewColumn c;
 
-                    c = (m.Dependment) switch
+                    c = (m.Dependency) switch
                     {
                         not null => new DataGridViewComboBoxColumn
                         {
-                            DisplayMember = m.Dependment.ToPropName,
-                            ValueMember = m.Dependment.ToPropName,
-                            DataSource = m.Dependment.DataSource,
+                            DisplayMember = m.Dependency.ToPropName,
+                            ValueMember = m.Dependency.ToPropName,
+                            DataSource = m.Dependency.DataSource,
                         },
                         _ => new DataGridViewTextBoxColumn()
                     };
@@ -91,6 +91,8 @@ namespace RPK.Administrator.Presenter
                     c.ReadOnly = m.ReadOnly;
                     if (m.ReadOnly)
                         c.DefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.DarkGray };
+                    c.ValueType = m.Type;
+                    c.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
                     return c;
                 });
 

@@ -24,14 +24,14 @@ namespace ApplicationController
             builder.RegisterType<MathModel>();
             builder.RegisterType<FileExportService>();
             builder.RegisterType<ResearcherPresenter>()
-                .WithParameter(new TypedParameter(typeof(Role), new Role { RoleId = 2 }))
+                .WithParameter(new TypedParameter(typeof(Role), new Role { Id = 2 }))
                 .AsSelf()
                 .As<RolePresenterBase>();
 
             builder.RegisterType<AdministratorForm>();
             builder.RegisterType<UsersContext>().As<ExtendedDbContext>().AsSelf();
             builder.RegisterType<AdministratorPresenter>()
-                .WithParameter(new TypedParameter(typeof(Role), new Role { RoleId = 1 }))
+                .WithParameter(new TypedParameter(typeof(Role), new Role { Id = 1 }))
                 .AsSelf()
                 .As<RolePresenterBase>();
 

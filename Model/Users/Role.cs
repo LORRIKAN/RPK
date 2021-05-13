@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable disable
 
@@ -15,9 +16,10 @@ namespace RPK.Model.Users
             Users = new HashSet<User>();
         }
 
+        [Column("RoleId")]
         [Display(Name = "Идентификатор роли")]
         [ReadOnly(true)]
-        public long RoleId { get; set; }
+        public long Id { get; set; }
 
         [Display(Name = "Наименование роли")]
         [Required]
@@ -34,12 +36,12 @@ namespace RPK.Model.Users
         public bool Equals(Role other)
         {
             return other != null &&
-                   RoleId == other.RoleId;
+                   Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(RoleId);
+            return HashCode.Combine(Id);
         }
 
         public static bool operator ==(Role left, Role right)

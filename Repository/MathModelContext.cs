@@ -185,13 +185,13 @@ namespace RPK.Repository.MathModel
         {
             foreach (var par in Parameters.Local)
             {
-                string parameterIsMultiTyped = $"Параметр {par.Name} (Id: {par.ParameterId}) не может быть сразу в";
+                string parameterIsMultiTyped = $"Параметр {par.Name} (Id: {par.Id}) не может быть сразу в";
 
                 int typesCounter = 0;
 
                 if (par?.CanalGeometryParameters.Any() is true)
                 {
-                    string modelName = $"'{GetModelName<CanalGeometryParameter>()}'";
+                    string modelName = $" '{GetModelName<CanalGeometryParameter>()}'";
                     parameterIsMultiTyped += modelName;
                     typesCounter++;
                 }

@@ -43,7 +43,7 @@ namespace RPK.Researcher.View
         {
             return new Parameter
             (
-                parameterId: modelParameter.ParameterId,
+                parameterId: modelParameter.Id,
                 name: modelParameter.Name,
                 measureUnit: modelParameter.MeasureUnit,
                 designation: modelParameter.Designation,
@@ -60,7 +60,7 @@ namespace RPK.Researcher.View
         {
             return new ParameterWithBounds
             (
-                ParameterId: variableParameter.Parameter.ParameterId,
+                ParameterId: variableParameter.Parameter.Id,
                 Name: variableParameter.Parameter.Name,
                 Designation: variableParameter.Parameter.Designation,
                 MeasureUnit: variableParameter.Parameter.MeasureUnit,

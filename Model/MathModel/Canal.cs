@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable disable
 
@@ -16,9 +17,10 @@ namespace RPK.Model.MathModel
             VariableParameters = new HashSet<VariableParameter>();
         }
 
+        [Column("CanalId")]
         [Display(Name = "Идентификатор канала")]
         [ReadOnly(true)]
-        public long CanalId { get; set; }
+        public long Id { get; set; }
 
         [Display(Name = "Наименование канала")]
         [Required]
@@ -38,12 +40,12 @@ namespace RPK.Model.MathModel
         public bool Equals(Canal other)
         {
             return other != null &&
-                   CanalId == other.CanalId;
+                   Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CanalId);
+            return HashCode.Combine(Id);
         }
 
         public static bool operator ==(Canal left, Canal right)

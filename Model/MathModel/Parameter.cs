@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #nullable disable
 
@@ -18,9 +19,10 @@ namespace RPK.Model.MathModel
             VariableParameters = new HashSet<VariableParameter>();
         }
 
+        [Column("ParameterId")]
         [Display(Name = "Идентификатор параметра")]
         [ReadOnly(true)]
-        public long ParameterId { get; set; }
+        public long Id { get; set; }
 
         [Display(Name = "Наименование параметра")]
         [Required]
@@ -56,12 +58,12 @@ namespace RPK.Model.MathModel
         public bool Equals(Parameter other)
         {
             return other != null &&
-                   ParameterId == other.ParameterId;
+                   Id == other.Id;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ParameterId);
+            return HashCode.Combine(Id);
         }
 
         public static bool operator ==(Parameter left, Parameter right)

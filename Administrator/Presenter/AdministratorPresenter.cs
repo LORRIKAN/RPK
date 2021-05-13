@@ -30,6 +30,20 @@ namespace RPK.Administrator.Presenter
             AdministratorForm.GetContextEntitiesNames += AdministratorForm_GetContextEntitiesNames;
             AdministratorForm.BindDataGridView += AdministratorForm_BindDataGridView;
             AdministratorForm.ValidateEntity += AdministratorForm_ValidateEntity;
+            AdministratorForm.AddRow += AdministratorForm_AddRow;
+        }
+
+        private bool AdministratorForm_AddRow()
+        {
+            try
+            {
+                CurrEntity.AddNew();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateEntity((string contextName, string entityName) arg)
@@ -39,23 +53,25 @@ namespace RPK.Administrator.Presenter
 
         private DataGridView AdministratorForm_BindDataGridView((string contextName, string entityName, DataGridView dataGridView) arg)
         {
-            //foreach (var item in DbContexts.Values)
-            //{
-            //    foreach (var item1 in item.ChangeTracker.Entries())
-            //        switch (item1.State)
-            //        {
-            //            case EntityState.Modified:
-            //                item1.State = EntityState.Unchanged;
-            //                break;
-            //            case EntityState.Added:
-            //                item1.State = EntityState.Detached;
-            //                break;
-            //            case EntityState.Deleted:
-            //                item1.Reload();
-            //                break;
-            //            default: break;
-            //        }
-            //}
+            //if (DbContexts[arg.contextName].ChangeTracker.Entries().Any(e => e.))
+            foreach (var item1 in DbContexts[arg.contextName].ChangeTracker.Entries())
+                switch (item1.State)
+                {
+                    case EntityState.Modified:
+                        item1.State = EntityState.Unchanged;
+                        break;
+                    case EntityState.Added:
+                        item1.State = EntityState.Detached;
+                        break;
+                    case EntityState.Deleted:
+                        item1.Reload();
+                        break;
+                    default: break;
+                }
+
+            CurrContext = DbContexts[arg.contextName];
+
+            CurrEntity = Entities[(arg.contextName, arg.entityName)];
 
             return arg.dataGridView.Bind(Entities[(arg.contextName, arg.entityName)], DbContexts[arg.contextName]);
         }
@@ -88,6 +104,10 @@ namespace RPK.Administrator.Presenter
                 }
             }
         }
+
+        private ExtendedDbContext CurrContext { get; set; }
+
+        private IBindingList CurrEntity { get; set; }
 
         private Dictionary<string, ExtendedDbContext> DbContexts { get; set; }
 

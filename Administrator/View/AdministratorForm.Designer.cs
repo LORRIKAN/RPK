@@ -29,23 +29,33 @@ namespace RPK.Administrator.View
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AdministratorForm));
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.dbChooseGroupBox = new System.Windows.Forms.GroupBox();
             this.dbChooseComboBox = new RPK.InterfaceElements.SharedElements.CustomComboBox();
             this.tableChooseGroupBox = new System.Windows.Forms.GroupBox();
             this.tableChooseComboBox = new System.Windows.Forms.ComboBox();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.dataGridView = new System.Windows.Forms.DataGridView();
+            this.toolStrip = new System.Windows.Forms.ToolStrip();
+            this.cancelButt = new System.Windows.Forms.ToolStripButton();
+            this.redoButt = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.addButt = new System.Windows.Forms.ToolStripButton();
+            this.deleteButt = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveButt = new System.Windows.Forms.ToolStripButton();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeAccountMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.abortLastChangeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel.SuspendLayout();
             this.dbChooseGroupBox.SuspendLayout();
             this.tableChooseGroupBox.SuspendLayout();
+            this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
+            this.toolStrip.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -55,7 +65,7 @@ namespace RPK.Administrator.View
             this.tableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel.Controls.Add(this.dbChooseGroupBox, 0, 0);
             this.tableLayoutPanel.Controls.Add(this.tableChooseGroupBox, 0, 1);
-            this.tableLayoutPanel.Controls.Add(this.dataGridView, 0, 2);
+            this.tableLayoutPanel.Controls.Add(this.panel1, 0, 2);
             this.tableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel.Location = new System.Drawing.Point(0, 33);
             this.tableLayoutPanel.Name = "tableLayoutPanel";
@@ -111,26 +121,116 @@ namespace RPK.Administrator.View
             this.tableChooseComboBox.TabIndex = 0;
             this.tableChooseComboBox.SelectedValueChanged += new System.EventHandler(this.TableChooseComboBox_SelectedValueChanged);
             // 
+            // panel1
+            // 
+            this.panel1.Controls.Add(this.dataGridView);
+            this.panel1.Controls.Add(this.toolStrip);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(3, 163);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(934, 291);
+            this.panel1.TabIndex = 2;
+            // 
             // dataGridView
             // 
-            this.dataGridView.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
+            this.dataGridView.AllowUserToAddRows = false;
+            this.dataGridView.AllowUserToDeleteRows = false;
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView.Location = new System.Drawing.Point(3, 163);
+            this.dataGridView.Location = new System.Drawing.Point(0, 50);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.RowHeadersWidth = 62;
             this.dataGridView.RowTemplate.Height = 33;
-            this.dataGridView.Size = new System.Drawing.Size(934, 291);
-            this.dataGridView.TabIndex = 2;
+            this.dataGridView.Size = new System.Drawing.Size(934, 241);
+            this.dataGridView.TabIndex = 1;
             this.dataGridView.RowValidating += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.DataGridView_RowValidating);
+            // 
+            // toolStrip
+            // 
+            this.toolStrip.AutoSize = false;
+            this.toolStrip.ImageScalingSize = new System.Drawing.Size(40, 40);
+            this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cancelButt,
+            this.redoButt,
+            this.toolStripSeparator1,
+            this.addButt,
+            this.deleteButt,
+            this.toolStripSeparator2,
+            this.saveButt});
+            this.toolStrip.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip.Name = "toolStrip";
+            this.toolStrip.Size = new System.Drawing.Size(934, 50);
+            this.toolStrip.TabIndex = 0;
+            this.toolStrip.Text = "toolStrip1";
+            // 
+            // cancelButt
+            // 
+            this.cancelButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.cancelButt.Enabled = false;
+            this.cancelButt.Image = ((System.Drawing.Image)(resources.GetObject("cancelButt.Image")));
+            this.cancelButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.cancelButt.Name = "cancelButt";
+            this.cancelButt.Size = new System.Drawing.Size(44, 45);
+            this.cancelButt.Text = "toolStripButton1";
+            this.cancelButt.ToolTipText = "Отменить изменение";
+            // 
+            // redoButt
+            // 
+            this.redoButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.redoButt.Enabled = false;
+            this.redoButt.Image = ((System.Drawing.Image)(resources.GetObject("redoButt.Image")));
+            this.redoButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.redoButt.Name = "redoButt";
+            this.redoButt.Size = new System.Drawing.Size(44, 45);
+            this.redoButt.Text = "toolStripButton2";
+            this.redoButt.ToolTipText = "Возвратить изменение";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 50);
+            // 
+            // addButt
+            // 
+            this.addButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.addButt.Image = ((System.Drawing.Image)(resources.GetObject("addButt.Image")));
+            this.addButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.addButt.Name = "addButt";
+            this.addButt.Size = new System.Drawing.Size(44, 45);
+            this.addButt.Text = "toolStripButton1";
+            this.addButt.ToolTipText = "Добавить запись";
+            // 
+            // deleteButt
+            // 
+            this.deleteButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.deleteButt.Image = ((System.Drawing.Image)(resources.GetObject("deleteButt.Image")));
+            this.deleteButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.deleteButt.Name = "deleteButt";
+            this.deleteButt.Size = new System.Drawing.Size(44, 45);
+            this.deleteButt.Text = "toolStripButton1";
+            this.deleteButt.ToolTipText = "Удалить запись";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 50);
+            // 
+            // saveButt
+            // 
+            this.saveButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.saveButt.Enabled = false;
+            this.saveButt.Image = ((System.Drawing.Image)(resources.GetObject("saveButt.Image")));
+            this.saveButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.saveButt.Name = "saveButt";
+            this.saveButt.Size = new System.Drawing.Size(44, 45);
+            this.saveButt.Text = "toolStripButton1";
+            this.saveButt.ToolTipText = "Сохранить изменения";
             // 
             // menuStrip
             // 
             this.menuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileMenuItem,
-            this.abortLastChangeMenuItem,
-            this.saveMenuItem,
             this.aboutMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -159,18 +259,6 @@ namespace RPK.Administrator.View
             this.exitMenuItem.Size = new System.Drawing.Size(316, 34);
             this.exitMenuItem.Text = "Выход";
             // 
-            // abortLastChangeMenuItem
-            // 
-            this.abortLastChangeMenuItem.Name = "abortLastChangeMenuItem";
-            this.abortLastChangeMenuItem.Size = new System.Drawing.Size(200, 29);
-            this.abortLastChangeMenuItem.Text = "Отменить изменение";
-            // 
-            // saveMenuItem
-            // 
-            this.saveMenuItem.Name = "saveMenuItem";
-            this.saveMenuItem.Size = new System.Drawing.Size(114, 29);
-            this.saveMenuItem.Text = "Сохранить";
-            // 
             // aboutMenuItem
             // 
             this.aboutMenuItem.Name = "aboutMenuItem";
@@ -187,10 +275,14 @@ namespace RPK.Administrator.View
             this.Name = "AdministratorForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Главное окно";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.tableLayoutPanel.ResumeLayout(false);
             this.dbChooseGroupBox.ResumeLayout(false);
             this.tableChooseGroupBox.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
+            this.toolStrip.ResumeLayout(false);
+            this.toolStrip.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -203,15 +295,22 @@ namespace RPK.Administrator.View
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
         private System.Windows.Forms.GroupBox dbChooseGroupBox;
         private System.Windows.Forms.GroupBox tableChooseGroupBox;
-        private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeAccountMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem abortLastChangeMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
         private InterfaceElements.SharedElements.CustomComboBox dbChooseComboBox;
         private System.Windows.Forms.ComboBox tableChooseComboBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.DataGridView dataGridView;
+        private System.Windows.Forms.ToolStrip toolStrip;
+        private System.Windows.Forms.ToolStripButton cancelButt;
+        private System.Windows.Forms.ToolStripButton redoButt;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton addButt;
+        private System.Windows.Forms.ToolStripButton deleteButt;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripButton saveButt;
     }
 }
