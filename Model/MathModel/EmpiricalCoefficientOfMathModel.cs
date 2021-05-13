@@ -3,16 +3,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace RPK.Model.MathModel
 {
-    public partial class EmpiricalCoefficientOfMathModel : IEquatable<EmpiricalCoefficientOfMathModel>
+    [Display(Name = "Эмпирические коэффициенты математической модели")]
+    public partial class EmpiricalCoefficientOfMathModel : BaseModel, IEquatable<EmpiricalCoefficientOfMathModel>
     {
+        [Display(Name = "Идентификатор параметра")]
+        [Required]
         public long ParameterId { get; set; }
+
+        [Display(Name = "Идентификатор материала")]
+        [Required]
         public long MaterialId { get; set; }
+
+        [Display(Name = "Значение параметра")]
+        [Required]
         public double ParameterValue { get; set; }
 
+        [Browsable(false)]
         public virtual Material Material { get; set; }
+
+        [Browsable(false)]
         public virtual Parameter Parameter { get; set; }
 
         public override bool Equals(object obj)

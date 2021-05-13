@@ -1,11 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Repository;
 using RPK.Model.Users;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 #nullable disable
 
 namespace RPK.Repository.Users
 {
-    public partial class UsersContext : DbContext
+    public partial class UsersContext : ExtendedDbContext
     {
         public UsersContext()
         {
@@ -58,5 +63,25 @@ namespace RPK.Repository.Users
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        public override string ToString()
+        {
+            return "Пользователи";
+        }
+        protected override IList<IBindingList> GetDbSetsInternal()
+        {
+            return new List<IBindingList> { Roles.Local.ToBindingList(), Users.Local.ToBindingList() };
+        }
+
+        protected override void LoadDbSetsWithDbData()
+        {
+            Roles.Load();
+            Users.Load();
+        }
+
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync()
+        {
+            yield return await ValueTask.FromResult<ValidationResult>(null);
+        }
     }
 }

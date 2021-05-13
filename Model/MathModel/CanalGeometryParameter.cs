@@ -1,18 +1,32 @@
 ﻿#nullable disable
 
-
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace RPK.Model.MathModel
 {
-    public partial class CanalGeometryParameter : IEquatable<CanalGeometryParameter>
+    [Display(Name = "Геометрические параметры каналов")]
+    public partial class CanalGeometryParameter : BaseModel, IEquatable<CanalGeometryParameter>
     {
+        [Display(Name = "Идентификатор канала")]
+        //[Required(AllowEmptyStrings = true)]
         public long CanalId { get; set; }
+
+        [Display(Name = "Идентификатор параметра")]
+        //[Required(AllowEmptyStrings = true)]
         public long ParameterId { get; set; }
+
+        [Display(Name = "Значение параметра")]
+        [Required]
         public double ParameterValue { get; set; }
 
+        [Browsable(false)]
         public virtual Canal Canal { get; set; }
+
+        [Browsable(false)]
         public virtual Parameter Parameter { get; set; }
 
         public override bool Equals(object obj)

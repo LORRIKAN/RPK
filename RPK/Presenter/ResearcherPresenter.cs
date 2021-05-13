@@ -1,5 +1,6 @@
-﻿using RPK.Presenter;
-using RPK.Model.MathModel;
+﻿using RPK.Model.MathModel;
+using RPK.Model.Users;
+using RPK.Presenter;
 using RPK.Repository.MathModel;
 using RPK.Researcher.View;
 using System;
@@ -8,7 +9,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using RPK.Model.Users;
 
 namespace RPK.Researcher.Presenter
 {

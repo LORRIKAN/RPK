@@ -11,13 +11,15 @@ namespace RPK.InterfaceElements.ResearcherFormElements
             Validator = null;
         }
 
-        public override object? Value { get => base.Value; set 
-            { 
-                base.value = value; 
+        public override object? Value
+        {
+            get => base.Value; set
+            {
+                base.value = value;
                 InputTextBox.Text = value?.ToString();
 
                 ParameterInputStatus = ParameterInputStatus.Validated;
-            } 
+            }
         }
     }
 }

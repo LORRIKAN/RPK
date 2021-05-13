@@ -93,6 +93,7 @@ namespace RPK.Login.View
             this.Controls.Add(this.loginButt);
             this.MaximizeBox = false;
             this.Name = "LoginForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Вход";
             this.ResumeLayout(false);
             this.PerformLayout();

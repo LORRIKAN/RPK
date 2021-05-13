@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using RPK.InterfaceElements.ResearcherFormElements;
-using RPK.InterfaceElements.SharedElements;
 using RPK.Model.MathModel;
 using ScottPlot;
 using ScottPlot.Plottable;
@@ -651,7 +650,7 @@ namespace RPK.Researcher.View
 
                         this.Invoke(new MethodInvoker(() =>
                             resultsGrid.Rows.Add(coordinate.ToString($"F{coordinatePrecision}"), string.Format($"{intermediateTemperature:0.00}"),
-                            string.Format($"{intermediateViscosity:0.00}"))));
+                            string.Format($"{intermediateViscosity:0}"))));
                     }
                 }
                 catch { return; }
@@ -718,7 +717,7 @@ namespace RPK.Researcher.View
             else if (formsPlot == viscosityPlot)
             {
                 ViscosityHLine.IsVisible = true;
-                ViscosityHLine.Label = $"Y:{pointY:0.00}";
+                ViscosityHLine.Label = $"Y:{pointY:0}";
                 ViscosityHLine.Y = pointY;
 
                 ViscosityVLine.IsVisible = true;

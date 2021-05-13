@@ -1,14 +1,15 @@
 ﻿using Autofac;
-using RPK.Presenter;
+using Repository;
 using RPK.Administrator.Presenter;
 using RPK.Administrator.View;
 using RPK.Login.Presenter;
 using RPK.Login.View;
+using RPK.Model.Users;
+using RPK.Presenter;
 using RPK.Repository.MathModel;
 using RPK.Repository.Users;
 using RPK.Researcher.Presenter;
 using RPK.Researcher.View;
-using RPK.Model.Users;
 
 namespace ApplicationController
 {
@@ -19,7 +20,7 @@ namespace ApplicationController
             var builder = new ContainerBuilder();
 
             builder.RegisterType<ResearcherForm>();
-            builder.RegisterType<MathModelContext>();
+            builder.RegisterType<MathModelContext>().As<ExtendedDbContext>().AsSelf();
             builder.RegisterType<MathModel>();
             builder.RegisterType<FileExportService>();
             builder.RegisterType<ResearcherPresenter>()
@@ -28,9 +29,9 @@ namespace ApplicationController
                 .As<RolePresenterBase>();
 
             builder.RegisterType<AdministratorForm>();
-            builder.RegisterType<UsersContext>();
+            builder.RegisterType<UsersContext>().As<ExtendedDbContext>().AsSelf();
             builder.RegisterType<AdministratorPresenter>()
-                .WithParameter( new TypedParameter(typeof(Role), new Role { RoleId = 1 }))
+                .WithParameter(new TypedParameter(typeof(Role), new Role { RoleId = 1 }))
                 .AsSelf()
                 .As<RolePresenterBase>();
 

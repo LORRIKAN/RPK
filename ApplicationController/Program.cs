@@ -1,12 +1,10 @@
 using Autofac;
+using RPK.InterfaceElements.SharedElements;
+using RPK.Model.Users;
 using RPK.Presenter;
-using RPK.Login.Presenter;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
-using RPK.Model.Users;
-using RPK.InterfaceElements.SharedElements;
 
 namespace ApplicationController
 {
@@ -29,7 +27,7 @@ namespace ApplicationController
             LoginPresenterBase loginPresenter = scope.Resolve<LoginPresenterBase>();
 
             loginPresenter.UserLoggedIn += UserLoggedIn;
-            
+
             void UserLoggedIn(User user)
             {
                 IEnumerable<RolePresenterBase> rolePresenters = scope.Resolve<IEnumerable<RolePresenterBase>>();

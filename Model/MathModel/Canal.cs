@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 #nullable disable
 
 namespace RPK.Model.MathModel
 {
-    public partial class Canal : IEquatable<Canal>
+    [Display(Name = "Каналы")]
+    public partial class Canal : BaseModel, IEquatable<Canal>
     {
         public Canal()
         {
@@ -13,10 +16,18 @@ namespace RPK.Model.MathModel
             VariableParameters = new HashSet<VariableParameter>();
         }
 
+        [Display(Name = "Идентификатор канала")]
+        [ReadOnly(true)]
         public long CanalId { get; set; }
+
+        [Display(Name = "Наименование канала")]
+        [Required]
         public string Brand { get; set; }
 
+        [Browsable(false)]
         public virtual ICollection<CanalGeometryParameter> CanalGeometryParameters { get; set; }
+
+        [Browsable(false)]
         public virtual ICollection<VariableParameter> VariableParameters { get; set; }
 
         public override bool Equals(object obj)

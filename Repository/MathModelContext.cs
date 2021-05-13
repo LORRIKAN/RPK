@@ -1,11 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Repository;
+using RPK.Model;
 using RPK.Model.MathModel;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 #nullable disable
 
 namespace RPK.Repository.MathModel
 {
-    public partial class MathModelContext : DbContext
+    public partial class MathModelContext : ExtendedDbContext
     {
         public MathModelContext()
         {
@@ -24,6 +33,7 @@ namespace RPK.Repository.MathModel
         public virtual DbSet<Parameter> Parameters { get; set; }
         public virtual DbSet<ParameterOfMaterialProperty> ParameterOfMaterialProperties { get; set; }
         public virtual DbSet<VariableParameter> VariableParameters { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -138,5 +148,129 @@ namespace RPK.Repository.MathModel
         }
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+
+        public override string ToString()
+        {
+            return "Математическая модель";
+        }
+
+        protected override void LoadDbSetsWithDbData()
+        {
+            Canals.Load();
+            CanalGeometryParameters.Load();
+            EmpiricalCoefficientOfMathModels.Load();
+            Materials.Load();
+            MeasureUnits.Load();
+            Parameters.Load();
+            ParameterOfMaterialProperties.Load();
+            VariableParameters.Load();
+        }
+
+        protected override IList<IBindingList> GetDbSetsInternal()
+        {
+            return new List<IBindingList>
+            {
+                Canals.Local.ToBindingList(),
+                CanalGeometryParameters.Local.ToBindingList(),
+                EmpiricalCoefficientOfMathModels.Local.ToBindingList(),
+                Materials.Local.ToBindingList(),
+                MeasureUnits.Local.ToBindingList(),
+                Parameters.Local.ToBindingList(),
+                ParameterOfMaterialProperties.Local.ToBindingList(),
+                VariableParameters.Local.ToBindingList()
+            };
+        }
+
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync()
+        {
+            foreach (var par in Parameters.Local)
+            {
+                string parameterIsMultiTyped = $"Параметр {par.Name} (Id: {par.ParameterId}) не может быть сразу в";
+
+                int typesCounter = 0;
+
+                if (par?.CanalGeometryParameters.Any() is true)
+                {
+                    string modelName = $"'{GetModelName<CanalGeometryParameter>()}'";
+                    parameterIsMultiTyped += modelName;
+                    typesCounter++;
+                }
+
+                if (par?.EmpiricalCoefficientOfMathModels.Any() is true)
+                {
+                    string modelName = $" '{GetModelName<EmpiricalCoefficientOfMathModel>()}'";
+                    parameterIsMultiTyped += modelName;
+                    typesCounter++;
+                }
+
+                if (par?.ParameterOfMaterialProperties.Any() is true)
+                {
+                    string modelName = $" '{GetModelName<ParameterOfMaterialProperty>()}'";
+                    parameterIsMultiTyped += modelName;
+                    typesCounter++;
+                }
+
+                if (par?.VariableParameters.Any() is true)
+                {
+                    string modelName = $" '{GetModelName<VariableParameter>()}'";
+                    parameterIsMultiTyped += modelName;
+                    typesCounter++;
+                }
+
+                parameterIsMultiTyped += ".";
+
+                if (typesCounter > 1)
+                    yield return await ValueTask.FromResult(new ValidationResult(parameterIsMultiTyped));
+            }
+
+            string repeatingParamsError = string.Empty;
+
+            Dictionary<string, IEnumerable<string>> setsWithRepeatingValues;
+
+            IEnumerable<string> repeatingGeometryParams =
+                CanalGeometryParameters.Local.GetDuplicates(p => new { p.CanalId, p.ParameterId })
+                .Select(p => $"Параметр с Id: {p.ParameterId} и канал с Id: {p.CanalId}.");
+
+            IEnumerable<string> repeatingMathModelCoefficients =
+                EmpiricalCoefficientOfMathModels.Local.GetDuplicates(p => new { p.MaterialId, p.ParameterId })
+                .Select(p => $"Параметр с Id: {p.ParameterId} и материал с Id: {p.MaterialId}.");
+
+            IEnumerable<string> repeatingMaterialPropertyParams =
+                ParameterOfMaterialProperties.Local.GetDuplicates(p => new { p.MaterialId, p.ParameterId })
+                .Select(p => $"Параметр с Id: {p.ParameterId} и материал с Id: {p.MaterialId}.");
+
+            IEnumerable<string> repeatingVariableParams =
+                VariableParameters.Local.GetDuplicates(p => new { p.CanalId, p.MaterialId, p.ParameterId })
+                .Select(p => $"Параметр с Id: {p.ParameterId}, материал с Id: {p.MaterialId}, канал с Id: {p.CanalId}.");
+
+            setsWithRepeatingValues = new Dictionary<string, IEnumerable<string>>
+            {
+                { GetModelName<CanalGeometryParameter>(), repeatingGeometryParams },
+                { GetModelName<EmpiricalCoefficientOfMathModel>(), repeatingMaterialPropertyParams },
+                { GetModelName<ParameterOfMaterialProperty>(), repeatingMaterialPropertyParams },
+                { GetModelName<VariableParameter>(), repeatingVariableParams }
+            };
+
+            foreach (KeyValuePair<string, IEnumerable<string>> repeatingSet in setsWithRepeatingValues)
+            {
+                if (repeatingSet.Value.Any())
+                {
+                    string error = $"В '{repeatingSet.Key}' повторяются:{Environment.NewLine}";
+
+                    error += string.Join(Environment.NewLine, repeatingSet.Value);
+
+                    yield return await ValueTask.FromResult(new ValidationResult(error));
+                }
+            }
+        }
+
+        private string GetModelName<T>() where T : BaseModel
+        {
+            DisplayAttribute displayAttribute = typeof(T).GetCustomAttributes(true)
+                .OfType<DisplayAttribute>()
+                .FirstOrDefault();
+
+            return displayAttribute?.Name ?? typeof(T).Name;
+        }
     }
 }

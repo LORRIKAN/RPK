@@ -2,15 +2,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace RPK.Model.Users
 {
-    public partial class User : IEquatable<User>
+    [Display(Name = "Пользователи")]
+    public partial class User : BaseModel, IEquatable<User>
     {
+        [Display(Name = "Логин")]
+        [Required]
         public string Login { get; set; }
+
+        [Display(Name = "Пароль")]
+        [Required]
         public string Password { get; set; }
+
+        [Display(Name = "Идентификатор роли")]
         public long RoleId { get; set; }
 
+        [Browsable(false)]
         public virtual Role Role { get; set; }
 
         public override bool Equals(object obj)

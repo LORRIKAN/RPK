@@ -635,6 +635,7 @@ namespace RPK.Researcher.View
             this.Controls.Add(this.menuStrip);
             this.MainMenuStrip = this.menuStrip;
             this.Name = "ResearcherForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Главное окно";
             this.tabControl.ResumeLayout(false);
             this.inputParametersPage.ResumeLayout(false);

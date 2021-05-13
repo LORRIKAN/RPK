@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 #nullable disable
 
 namespace RPK.Model.MathModel
 {
-    public partial class MeasureUnit : IEquatable<MeasureUnit>
+    [Display(Name = "Единицы измерения")]
+    public partial class MeasureUnit : BaseModel, IEquatable<MeasureUnit>
     {
         public MeasureUnit()
         {
             Parameters = new HashSet<Parameter>();
         }
 
+        [Display(Name = "Единица измерения")]
+        [Required]
         public string Value { get; set; }
 
+        [Browsable(false)]
         public virtual ICollection<Parameter> Parameters { get; set; }
 
         public override bool Equals(object obj)

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 #nullable disable
 
 namespace RPK.Model.MathModel
 {
-    public partial class Material : IEquatable<Material>
+    [Display(Name = "Материалы")]
+    public partial class Material : BaseModel, IEquatable<Material>
     {
         public Material()
         {
@@ -14,11 +17,21 @@ namespace RPK.Model.MathModel
             VariableParameters = new HashSet<VariableParameter>();
         }
 
+        [Display(Name = "Идентификатор материала")]
+        [ReadOnly(true)]
         public long MaterialId { get; set; }
+
+        [Display(Name = "Наименование материала")]
+        [Required]
         public string Name { get; set; }
 
+        [Browsable(false)]
         public virtual ICollection<EmpiricalCoefficientOfMathModel> EmpiricalCoefficientOfMathModels { get; set; }
+
+        [Browsable(false)]
         public virtual ICollection<ParameterOfMaterialProperty> ParameterOfMaterialProperties { get; set; }
+
+        [Browsable(false)]
         public virtual ICollection<VariableParameter> VariableParameters { get; set; }
 
         public override bool Equals(object obj)
