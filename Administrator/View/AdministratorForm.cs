@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -35,8 +36,8 @@ namespace RPK.Administrator.View
         private void AddButt_Click(object sender, EventArgs e)
         {
             AddRow();
-            addButt.Enabled = false;
-            saveButt.Enabled = false;
+
+            CheckControlsAndEnableButts();
         }
 
         private void DataGridView_DataError(object sender, DataGridViewDataErrorEventArgs e)
@@ -78,15 +79,18 @@ namespace RPK.Administrator.View
             if (!string.IsNullOrEmpty(dataGridView.Rows[e.RowIndex].ErrorText))
             {
                 e.Cancel = true;
+            }
 
-                saveButt.Enabled = false;
-                addButt.Enabled = false;
-            }
-            else if (e.RowIndex)
-            {
-                saveButt.Enabled = true;
-                addButt.Enabled = true;
-            }
+            CheckControlsAndEnableButts();
+        }
+
+        private void CheckControlsAndEnableButts()
+        {
+            bool allRowsAreValidated = dataGridView.Rows.Cast<DataGridViewRow>().All(r => string.IsNullOrEmpty(r.ErrorText));
+
+            addButt.Enabled = allRowsAreValidated;
+
+            saveButt.Enabled = allRowsAreValidated;
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -94,7 +98,5 @@ namespace RPK.Administrator.View
             e.Cancel = false;
             base.OnClosing(e);
         }
-
-        private int LastAddedRowIndex { get; set; }
     }
 }
