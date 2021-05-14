@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPK.Model.MathModel
 {
     [Display(Name = "Режимные параметры")]
-    public partial class VariableParameter : BaseModel, IEquatable<VariableParameter>
+    public partial class VariableParameter : ParameterTypeBase, IEquatable<VariableParameter>
     {
         [Display(Name = "Идентификатор материала")]
         [Required]
@@ -18,7 +19,7 @@ namespace RPK.Model.MathModel
 
         [Display(Name = "Идентификатор параметра")]
         [Required]
-        public long ParameterId { get; set; }
+        public override long ParameterId { get; set; }
 
         [Display(Name = "Верхняя регламентная граница")]
         [Required]

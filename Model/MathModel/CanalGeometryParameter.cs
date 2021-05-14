@@ -9,15 +9,15 @@ using System.Linq;
 namespace RPK.Model.MathModel
 {
     [Display(Name = "Геометрические параметры каналов")]
-    public partial class CanalGeometryParameter : BaseModel, IEquatable<CanalGeometryParameter>
+    public partial class CanalGeometryParameter : ParameterTypeBase, IEquatable<CanalGeometryParameter>
     {
         [Display(Name = "Идентификатор канала")]
-        //[Required(AllowEmptyStrings = true)]
+        [Required]
         public long CanalId { get; set; }
 
         [Display(Name = "Идентификатор параметра")]
-        //[Required(AllowEmptyStrings = true)]
-        public long ParameterId { get; set; }
+        [Required]
+        public override long ParameterId { get; set; }
 
         [Display(Name = "Значение параметра")]
         [Required]

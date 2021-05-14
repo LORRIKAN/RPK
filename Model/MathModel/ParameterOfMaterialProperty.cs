@@ -7,11 +7,11 @@ using System.ComponentModel.DataAnnotations;
 namespace RPK.Model.MathModel
 {
     [Display(Name = "Параметры свойств материалов")]
-    public partial class ParameterOfMaterialProperty : BaseModel, IEquatable<ParameterOfMaterialProperty>
+    public partial class ParameterOfMaterialProperty : ParameterTypeBase, IEquatable<ParameterOfMaterialProperty>
     {
         [Display(Name = "Идентификатор параметра")]
         [Required]
-        public long ParameterId { get; set; }
+        public override long ParameterId { get; set; }
 
         [Display(Name = "Идентификатор материала")]
         [Required]

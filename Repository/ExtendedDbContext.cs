@@ -33,7 +33,7 @@ namespace Repository
 
         protected abstract IEnumerable<IBindingList> GetDbSetsInternal();
 
-        public abstract IAsyncEnumerable<ValidationResult> ValidateAsync();
+        public abstract IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName);
 
         public ExtendedDbContext()
         {

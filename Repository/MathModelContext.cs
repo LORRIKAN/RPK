@@ -154,6 +154,10 @@ namespace RPK.Repository.MathModel
             return "Математическая модель";
         }
 
+        private List<long> ParametersOccupiedIds { get; set; } = new();
+
+        private List<string> ParametersIdNames { get; set; }
+
         protected override void LoadDbSetsWithDbData()
         {
             Canals.Load();
@@ -181,87 +185,37 @@ namespace RPK.Repository.MathModel
             };
         }
 
-        public override async IAsyncEnumerable<ValidationResult> ValidateAsync()
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName)
         {
-            foreach (var par in Parameters.Local)
+            if (ParametersIdNames is null || !ParametersIdNames.Any())
+                SetParametersIdsNames();
+
+            if (ParametersOccupiedIds is null || !ParametersOccupiedIds.Any())
+                SetOccupiedIds();
+
+            if (value is long longValue && longValue is not 0 && ParametersIdNames.Contains(columnName))
             {
-                string parameterIsMultiTyped = $"Параметр {par.Name} (Id: {par.Id}) не может быть сразу в";
-
-                int typesCounter = 0;
-
-                if (par?.CanalGeometryParameters.Any() is true)
+                if (ParametersOccupiedIds.Contains(longValue))
                 {
-                    string modelName = $" '{GetModelName<CanalGeometryParameter>()}'";
-                    parameterIsMultiTyped += modelName;
-                    typesCounter++;
+                    yield return await ValueTask.FromResult(new ValidationResult("Этот параметр уже является " +
+                        "параметром другого типа."));
                 }
-
-                if (par?.EmpiricalCoefficientOfMathModels.Any() is true)
-                {
-                    string modelName = $" '{GetModelName<EmpiricalCoefficientOfMathModel>()}'";
-                    parameterIsMultiTyped += modelName;
-                    typesCounter++;
-                }
-
-                if (par?.ParameterOfMaterialProperties.Any() is true)
-                {
-                    string modelName = $" '{GetModelName<ParameterOfMaterialProperty>()}'";
-                    parameterIsMultiTyped += modelName;
-                    typesCounter++;
-                }
-
-                if (par?.VariableParameters.Any() is true)
-                {
-                    string modelName = $" '{GetModelName<VariableParameter>()}'";
-                    parameterIsMultiTyped += modelName;
-                    typesCounter++;
-                }
-
-                parameterIsMultiTyped += ".";
-
-                if (typesCounter > 1)
-                    yield return await ValueTask.FromResult(new ValidationResult(parameterIsMultiTyped));
             }
 
-            string repeatingParamsError = string.Empty;
+            SetOccupiedIds();
+        }
 
-            Dictionary<string, IEnumerable<string>> setsWithRepeatingValues;
+        private void SetOccupiedIds()
+        {
+            ParametersOccupiedIds = GetDbSetsInternal()
+                .Where(bl => bl.GetDataType().IsSubclassOf(typeof(ParameterTypeBase)))
+                .SelectMany(bl => bl.Cast<ParameterTypeBase>().Select(pc => pc.ParameterId)).ToList();
+        }
 
-            IEnumerable<string> repeatingGeometryParams =
-                CanalGeometryParameters.Local.GetDuplicates(p => new { p.CanalId, p.ParameterId })
-                .Select(p => $"Параметр с Id: {p.ParameterId} и канал с Id: {p.CanalId}.");
-
-            IEnumerable<string> repeatingMathModelCoefficients =
-                EmpiricalCoefficientOfMathModels.Local.GetDuplicates(p => new { p.MaterialId, p.ParameterId })
-                .Select(p => $"Параметр с Id: {p.ParameterId} и материал с Id: {p.MaterialId}.");
-
-            IEnumerable<string> repeatingMaterialPropertyParams =
-                ParameterOfMaterialProperties.Local.GetDuplicates(p => new { p.MaterialId, p.ParameterId })
-                .Select(p => $"Параметр с Id: {p.ParameterId} и материал с Id: {p.MaterialId}.");
-
-            IEnumerable<string> repeatingVariableParams =
-                VariableParameters.Local.GetDuplicates(p => new { p.CanalId, p.MaterialId, p.ParameterId })
-                .Select(p => $"Параметр с Id: {p.ParameterId}, материал с Id: {p.MaterialId}, канал с Id: {p.CanalId}.");
-
-            setsWithRepeatingValues = new Dictionary<string, IEnumerable<string>>
-            {
-                { GetModelName<CanalGeometryParameter>(), repeatingGeometryParams },
-                { GetModelName<EmpiricalCoefficientOfMathModel>(), repeatingMaterialPropertyParams },
-                { GetModelName<ParameterOfMaterialProperty>(), repeatingMaterialPropertyParams },
-                { GetModelName<VariableParameter>(), repeatingVariableParams }
-            };
-
-            foreach (KeyValuePair<string, IEnumerable<string>> repeatingSet in setsWithRepeatingValues)
-            {
-                if (repeatingSet.Value.Any())
-                {
-                    string error = $"В '{repeatingSet.Key}' повторяются:{Environment.NewLine}";
-
-                    error += string.Join(Environment.NewLine, repeatingSet.Value);
-
-                    yield return await ValueTask.FromResult(new ValidationResult(error));
-                }
-            }
+        private void SetParametersIdsNames()
+        {
+            this.Canals.GetType();
+            ParametersIdNames = new List<string> { nameof(ParameterTypeBase.ParameterId) };
         }
 
         private string GetModelName<T>() where T : BaseModel

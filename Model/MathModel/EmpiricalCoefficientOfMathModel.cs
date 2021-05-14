@@ -9,11 +9,11 @@ using System.ComponentModel.DataAnnotations;
 namespace RPK.Model.MathModel
 {
     [Display(Name = "Эмпирические коэффициенты математической модели")]
-    public partial class EmpiricalCoefficientOfMathModel : BaseModel, IEquatable<EmpiricalCoefficientOfMathModel>
+    public partial class EmpiricalCoefficientOfMathModel : ParameterTypeBase, IEquatable<EmpiricalCoefficientOfMathModel>
     {
         [Display(Name = "Идентификатор параметра")]
         [Required]
-        public long ParameterId { get; set; }
+        public override long ParameterId { get; set; }
 
         [Display(Name = "Идентификатор материала")]
         [Required]

@@ -38,13 +38,14 @@ namespace RPK.Administrator.View
             this.panel1 = new System.Windows.Forms.Panel();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
-            this.cancelButt = new System.Windows.Forms.ToolStripButton();
+            this.undoButt = new System.Windows.Forms.ToolStripButton();
             this.redoButt = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.addButt = new System.Windows.Forms.ToolStripButton();
             this.deleteButt = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.saveButt = new System.Windows.Forms.ToolStripButton();
+            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.changeAccountMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -97,7 +98,7 @@ namespace RPK.Administrator.View
             this.dbChooseComboBox.Name = "dbChooseComboBox";
             this.dbChooseComboBox.Size = new System.Drawing.Size(928, 33);
             this.dbChooseComboBox.TabIndex = 0;
-            this.dbChooseComboBox.SelectedValueChanged += new System.EventHandler(this.DbChooseComboBox_SelectedValueChanged);
+            this.dbChooseComboBox.SelectedValueChanged += new System.EventHandler(this.LoadTablesNamesAsync);
             // 
             // tableChooseGroupBox
             // 
@@ -135,44 +136,47 @@ namespace RPK.Administrator.View
             // 
             this.dataGridView.AllowUserToAddRows = false;
             this.dataGridView.AllowUserToDeleteRows = false;
+            this.dataGridView.AllowUserToResizeRows = false;
             this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dataGridView.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
             this.dataGridView.Location = new System.Drawing.Point(0, 50);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.RowHeadersWidth = 62;
             this.dataGridView.RowTemplate.Height = 33;
             this.dataGridView.Size = new System.Drawing.Size(934, 241);
             this.dataGridView.TabIndex = 1;
-            this.dataGridView.RowValidating += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.DataGridView_RowValidating);
+            this.dataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
             // 
             // toolStrip
             // 
             this.toolStrip.AutoSize = false;
             this.toolStrip.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.cancelButt,
+            this.undoButt,
             this.redoButt,
             this.toolStripSeparator1,
             this.addButt,
             this.deleteButt,
             this.toolStripSeparator2,
-            this.saveButt});
+            this.saveButt,
+            this.progressBar});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(934, 50);
             this.toolStrip.TabIndex = 0;
             this.toolStrip.Text = "toolStrip1";
             // 
-            // cancelButt
+            // undoButt
             // 
-            this.cancelButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.cancelButt.Enabled = false;
-            this.cancelButt.Image = ((System.Drawing.Image)(resources.GetObject("cancelButt.Image")));
-            this.cancelButt.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.cancelButt.Name = "cancelButt";
-            this.cancelButt.Size = new System.Drawing.Size(44, 45);
-            this.cancelButt.Text = "toolStripButton1";
-            this.cancelButt.ToolTipText = "Отменить изменение";
+            this.undoButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.undoButt.Enabled = false;
+            this.undoButt.Image = ((System.Drawing.Image)(resources.GetObject("undoButt.Image")));
+            this.undoButt.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.undoButt.Name = "undoButt";
+            this.undoButt.Size = new System.Drawing.Size(44, 45);
+            this.undoButt.Text = "toolStripButton1";
+            this.undoButt.ToolTipText = "Отменить изменение";
             // 
             // redoButt
             // 
@@ -225,6 +229,14 @@ namespace RPK.Administrator.View
             this.saveButt.Size = new System.Drawing.Size(44, 45);
             this.saveButt.Text = "toolStripButton1";
             this.saveButt.ToolTipText = "Сохранить изменения";
+            // 
+            // progressBar
+            // 
+            this.progressBar.AutoSize = false;
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(50, 10);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBar.Visible = false;
             // 
             // menuStrip
             // 
@@ -305,12 +317,13 @@ namespace RPK.Administrator.View
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.ToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripButton cancelButt;
+        private System.Windows.Forms.ToolStripButton undoButt;
         private System.Windows.Forms.ToolStripButton redoButt;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton addButt;
         private System.Windows.Forms.ToolStripButton deleteButt;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton saveButt;
+        private System.Windows.Forms.ToolStripProgressBar progressBar;
     }
 }

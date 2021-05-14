@@ -79,7 +79,7 @@ namespace RPK.Repository.Users
             Users.Load();
         }
 
-        public override async IAsyncEnumerable<ValidationResult> ValidateAsync()
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName)
         {
             yield return await ValueTask.FromResult<ValidationResult>(null);
         }

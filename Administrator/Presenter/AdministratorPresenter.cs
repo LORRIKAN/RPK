@@ -15,6 +15,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RPK.Administrator.Presenter
 {
+    public struct Form_PresenterMessage
+    {
+        public string ContextName { get; set; }
+
+        public string EntityName { get; set; }
+    }
     public class AdministratorPresenter : RolePresenterBase
     {
         public override Form Form { get => AdministratorForm; }
@@ -26,18 +32,39 @@ namespace RPK.Administrator.Presenter
             Role = role;
 
             AdministratorForm = administratorForm;
-            AdministratorForm.GetContextsNames += AdministratorForm_GetContextsNames;
-            AdministratorForm.GetContextEntitiesNames += AdministratorForm_GetContextEntitiesNames;
-            AdministratorForm.BindDataGridView += AdministratorForm_BindDataGridView;
-            AdministratorForm.ValidateEntity += AdministratorForm_ValidateEntity;
-            AdministratorForm.AddRow += AdministratorForm_AddRow;
+            AdministratorForm.GetContextsNamesAsync += AdministratorForm_GetContextsNames;
+            AdministratorForm.GetContextEntitiesNamesAsync += AdministratorForm_GetContextEntitiesNames;
+            AdministratorForm.BindDataGridViewAsync += AdministratorForm_BindDataGridView;
+            AdministratorForm.ValidateValueAsync += AdministratorForm_ValidateValue;
+            AdministratorForm.AddRowAsync += AdministratorForm_AddRow;
+            AdministratorForm.AnyChangesAsync += AdministratorForm_AnyChanges;
+            AdministratorForm.AnyChangesToUndoAsync += AdministratorForm_AnyChanges;
+            AdministratorForm.AnyChangesToRedoAsync += AdministratorForm_AnyChangesToRedo;
         }
 
-        private bool AdministratorForm_AddRow()
+        private bool AdministratorForm_AnyChangesToRedo(Form_PresenterMessage arg)
+        {
+            throw new NotImplementedException();
+        }
+
+        private bool AdministratorForm_AnyChanges(Form_PresenterMessage message)
+        {
+            return DbContexts[message.ContextName].ChangeTracker.HasChanges();
+        }
+
+        private IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateValue(
+            (Form_PresenterMessage message, object value, string columnName) arg)
+        {
+            return DbContexts[arg.message.ContextName]
+                .ValidateAsync(arg.value, Entities[(arg.message.ContextName, arg.message.EntityName)], arg.columnName);
+        }
+
+        private bool AdministratorForm_AddRow(Form_PresenterMessage message)
         {
             try
             {
-                CurrEntity.AddNew();
+                IBindingList entity = Entities[(message.ContextName, message.EntityName)];
+                entity.AddNew();
                 return true;
             }
             catch
@@ -46,15 +73,10 @@ namespace RPK.Administrator.Presenter
             }
         }
 
-        private IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateEntity((string contextName, string entityName) arg)
+        private DataGridView AdministratorForm_BindDataGridView((Form_PresenterMessage message, DataGridView dataGridView) arg)
         {
-            return DbContexts[arg.contextName].ValidateAsync();
-        }
-
-        private DataGridView AdministratorForm_BindDataGridView((string contextName, string entityName, DataGridView dataGridView) arg)
-        {
-            //if (DbContexts[arg.contextName].ChangeTracker.Entries().Any(e => e.))
-            foreach (var item1 in DbContexts[arg.contextName].ChangeTracker.Entries())
+            DbContexts[arg.message.ContextName].ChangeTracker.Entries();
+            foreach (var item1 in DbContexts[arg.message.ContextName].ChangeTracker.Entries())
                 switch (item1.State)
                 {
                     case EntityState.Modified:
@@ -69,11 +91,12 @@ namespace RPK.Administrator.Presenter
                     default: break;
                 }
 
-            CurrContext = DbContexts[arg.contextName];
 
-            CurrEntity = Entities[(arg.contextName, arg.entityName)];
+            ExtendedDbContext dbContext = DbContexts[arg.message.ContextName];
 
-            return arg.dataGridView.Bind(Entities[(arg.contextName, arg.entityName)], DbContexts[arg.contextName]);
+            IBindingList entity = Entities[(arg.message.ContextName, arg.message.EntityName)];
+
+            return arg.dataGridView.Bind(entity, dbContext);
         }
 
         private IList<string> AdministratorForm_GetContextEntitiesNames(string contextName)
@@ -104,10 +127,6 @@ namespace RPK.Administrator.Presenter
                 }
             }
         }
-
-        private ExtendedDbContext CurrContext { get; set; }
-
-        private IBindingList CurrEntity { get; set; }
 
         private Dictionary<string, ExtendedDbContext> DbContexts { get; set; }
 
