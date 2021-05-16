@@ -50,6 +50,8 @@ namespace RPK.Model.MathModel
         [Browsable(false)]
         public virtual ICollection<VariableParameter> VariableParameters { get; set; }
 
+        public override Range UnchangeableRows => new(0, 12);
+
         public override bool Equals(object obj)
         {
             return Equals(obj as Parameter);

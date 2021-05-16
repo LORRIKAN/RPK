@@ -185,7 +185,8 @@ namespace RPK.Repository.MathModel
             };
         }
 
-        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName)
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName,
+            int rowIndex)
         {
             if (ParametersIdNames is null || !ParametersIdNames.Any())
                 SetParametersIdsNames();
@@ -193,8 +194,20 @@ namespace RPK.Repository.MathModel
             if (ParametersOccupiedIds is null || !ParametersOccupiedIds.Any())
                 SetOccupiedIds();
 
-            if (value is long longValue && longValue is not 0 && ParametersIdNames.Contains(columnName))
+            if (await RowCanBeChangedAsync(dataSource, rowIndex) is false)
             {
+                yield return await ValueTask.FromResult(new RowIndexIsInvalid("Данную строку нельзя модифицировать, " +
+                    "так как она является частью базовой математической модели программы."));
+                yield break;
+            }
+
+            if (value is long longValue && ParametersIdNames.Contains(columnName))
+            {
+                if (longValue is 0)
+                {
+                    yield return await ValueTask.FromResult(new ValidationResult("Id параметра не может быть равен нулю."));
+                    yield break;
+                }
                 if (ParametersOccupiedIds.Contains(longValue))
                 {
                     yield return await ValueTask.FromResult(new ValidationResult("Этот параметр уже является " +

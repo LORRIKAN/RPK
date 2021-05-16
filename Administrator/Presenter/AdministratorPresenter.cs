@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using Repository;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace RPK.Administrator.Presenter
 {
@@ -32,66 +34,153 @@ namespace RPK.Administrator.Presenter
             Role = role;
 
             AdministratorForm = administratorForm;
-            AdministratorForm.GetContextsNamesAsync += AdministratorForm_GetContextsNames;
-            AdministratorForm.GetContextEntitiesNamesAsync += AdministratorForm_GetContextEntitiesNames;
-            AdministratorForm.BindDataGridViewAsync += AdministratorForm_BindDataGridView;
-            AdministratorForm.ValidateValueAsync += AdministratorForm_ValidateValue;
-            AdministratorForm.AddRowAsync += AdministratorForm_AddRow;
-            AdministratorForm.AnyChangesAsync += AdministratorForm_AnyChanges;
-            AdministratorForm.AnyChangesToUndoAsync += AdministratorForm_AnyChanges;
-            AdministratorForm.AnyChangesToRedoAsync += AdministratorForm_AnyChangesToRedo;
+            AdministratorForm.GetContextsNames += AdministratorForm_GetContextsNames;
+            AdministratorForm.GetContextEntitiesNames += AdministratorForm_GetContextEntitiesNames;
+            AdministratorForm.BindDataGridView += AdministratorForm_BindDataGridViewAsync;
+            AdministratorForm.ValidateValueAsync += AdministratorForm_ValidateValueAsync;
+
+            AdministratorForm.TryAddRowAsync += AdministratorForm_AddRowAsync;
+            AdministratorForm.TryDeleteRowAsync += AdministratorForm_TryDeleteRowAsync;
+
+            AdministratorForm.AnyChangesForDbAsync += AdministratorForm_AnyChangesForContextAsync;
+            AdministratorForm.AnyChangesForTableAsync += AdministratorForm_AnyChangesForEntityAsync;
+            AdministratorForm.AnyChangesToUndoAsync += AdministratorForm_AnyChangesToUndoAsync;
+            AdministratorForm.AnyChangesToRedoAsync += AdministratorForm_AnyChangesToRedoAsync;
+
+            AdministratorForm.TryUndo += AdministratorForm_TryUndoAsync;
+            AdministratorForm.TryRedo += AdministratorForm_TryRedoAsync;
+
+            AdministratorForm.TrySaveChangesAsync += AdministratorForm_TrySaveChangesAsync;
+
+            AdministratorForm.CancelAllChangesForDb += AdministratorForm_CancelAllChangesForDb;
+            AdministratorForm.CancelAllChangesForTable += AdministratorForm_CancelAllChangesForTable;
         }
 
-        private bool AdministratorForm_AnyChangesToRedo(Form_PresenterMessage arg)
+        private void AdministratorForm_CancelAllChangesForTable(Form_PresenterMessage arg)
         {
-            throw new NotImplementedException();
+            foreach (EntityEntry entityEntry in FindChangingEntityEntries(arg))
+            {
+                CancelChange(entityEntry);
+            }
         }
 
-        private bool AdministratorForm_AnyChanges(Form_PresenterMessage message)
+        private IEnumerable<EntityEntry> FindChangingEntityEntries(Form_PresenterMessage arg)
         {
-            return DbContexts[message.ContextName].ChangeTracker.HasChanges();
+            DbContext dbContext = DbContexts[arg.ContextName];
+
+            IBindingList entity = Entities[(arg.ContextName, arg.EntityName)];
+
+            return dbContext.ChangeTracker.Entries().Where(e => e.Entity.GetType().IsAssignableTo(entity.GetDataType())
+                && e.State is not (EntityState.Detached or EntityState.Unchanged));
         }
 
-        private IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateValue(
-            (Form_PresenterMessage message, object value, string columnName) arg)
+        private void AdministratorForm_CancelAllChangesForDb(string arg)
         {
-            return DbContexts[arg.message.ContextName]
-                .ValidateAsync(arg.value, Entities[(arg.message.ContextName, arg.message.EntityName)], arg.columnName);
+            foreach (EntityEntry entityEntry in DbContexts[arg].ChangeTracker.Entries())
+            {
+                CancelChange(entityEntry);
+            }
         }
 
-        private bool AdministratorForm_AddRow(Form_PresenterMessage message)
+        private async Task<bool> AdministratorForm_AnyChangesForEntityAsync(Form_PresenterMessage message)
+        {
+            return await Task.Run(() => FindChangingEntityEntries(message).Any());
+        }
+
+        private async Task<(bool result, string errorMessage)> AdministratorForm_TrySaveChangesAsync(Form_PresenterMessage arg)
+        {
+            try
+            {
+                await DbContexts[arg.ContextName].SaveChangesAsync();
+                return await Task.FromResult((true, string.Empty));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult((false, ex.Message));
+            }
+        }
+
+        private async Task<(bool result, string errorMessage)> AdministratorForm_TryRedoAsync(Form_PresenterMessage arg)
+        {
+            return await Task.FromResult((true, string.Empty));
+        }
+
+        private async Task<(bool result, string errorMessage)> AdministratorForm_TryUndoAsync(Form_PresenterMessage arg)
+        {
+            return await Task.FromResult((true, string.Empty));
+        }
+
+        private async Task<(bool result, string errorMessage)> AdministratorForm_TryDeleteRowAsync((Form_PresenterMessage message, int rowIndex) arg)
+        {
+            IBindingList entity = Entities[(arg.message.ContextName, arg.message.EntityName)];
+
+            if (await DbContexts[arg.message.ContextName].RowCanBeChangedAsync(entity, arg.rowIndex) is false)
+                return (false, "Данную строку удалить нельзя, так как она является базовой частью программы.");
+
+            try
+            {
+                entity.RemoveAt(arg.rowIndex);
+                return await Task.FromResult((true, string.Empty));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult((false, ex.Message));
+            }
+        }
+
+        private async Task<bool> AdministratorForm_AnyChangesToUndoAsync(Form_PresenterMessage arg)
+        {
+            return await Task.FromResult(true);
+        }
+
+        private async Task<bool> AdministratorForm_AnyChangesToRedoAsync(Form_PresenterMessage arg)
+        {
+            return await Task.FromResult(true);
+        }
+
+        private async Task<bool> AdministratorForm_AnyChangesForContextAsync(string contextName)
+        {
+            return await Task.FromResult(DbContexts[contextName].ChangeTracker.HasChanges());
+        }
+
+        private async IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateValueAsync(
+            (Form_PresenterMessage message, object value, string columnName, int rowIndex) arg)
+        {
+            IAsyncEnumerable<ValidationResult> validationResults = DbContexts[arg.message.ContextName]
+                    .ValidateAsync(arg.value, Entities[(arg.message.ContextName, arg.message.EntityName)], arg.columnName,
+                    arg.rowIndex);
+
+            await foreach (ValidationResult validationResult in validationResults)
+            {
+                if (validationResult is RowIndexIsInvalid)
+                {
+                    CancelChange(DbContexts[arg.message.ContextName].ChangeTracker.Entries().First());
+                    AdministratorForm.ShowMessage("Операция не удалась", "Ваша последняя операция была безуспешной.",
+                        validationResult.ErrorMessage, MessageType.Error);
+                    yield break;
+                }
+
+                yield return validationResult;
+            }
+        }
+
+        private async Task<(bool result, string errorMessage)> AdministratorForm_AddRowAsync(Form_PresenterMessage message)
         {
             try
             {
                 IBindingList entity = Entities[(message.ContextName, message.EntityName)];
                 entity.AddNew();
-                return true;
+                return await Task.FromResult((true, string.Empty));
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return await Task.FromResult((false, ex.Message));
             }
         }
 
-        private DataGridView AdministratorForm_BindDataGridView((Form_PresenterMessage message, DataGridView dataGridView) arg)
+        private DataGridView AdministratorForm_BindDataGridViewAsync(
+            (Form_PresenterMessage message, DataGridView dataGridView) arg)
         {
-            DbContexts[arg.message.ContextName].ChangeTracker.Entries();
-            foreach (var item1 in DbContexts[arg.message.ContextName].ChangeTracker.Entries())
-                switch (item1.State)
-                {
-                    case EntityState.Modified:
-                        item1.State = EntityState.Unchanged;
-                        break;
-                    case EntityState.Added:
-                        item1.State = EntityState.Detached;
-                        break;
-                    case EntityState.Deleted:
-                        item1.Reload();
-                        break;
-                    default: break;
-                }
-
-
             ExtendedDbContext dbContext = DbContexts[arg.message.ContextName];
 
             IBindingList entity = Entities[(arg.message.ContextName, arg.message.EntityName)];
@@ -126,6 +215,34 @@ namespace RPK.Administrator.Presenter
                     Entities.Add((context.Key, dbSetName), set);
                 }
             }
+        }
+
+        void CancelChange(EntityEntry entityEntry)
+        {
+            switch (entityEntry.State)
+            {
+                case EntityState.Modified:
+                    entityEntry.State = EntityState.Unchanged;
+                    break;
+                case EntityState.Added:
+                    entityEntry.State = EntityState.Detached;
+                    break;
+                case EntityState.Deleted:
+                    entityEntry.Reload();
+                    break;
+                default: break;
+            }
+        }
+
+        public override Form Run(User user)
+        {
+            AdministratorForm.SetInitialData();
+
+            AdministratorForm.ReloginRequired += ReloginRequired;
+
+            AdministratorForm.SetUserDescription(user.Login, user.Role.RoleName);
+
+            return AdministratorForm;
         }
 
         private Dictionary<string, ExtendedDbContext> DbContexts { get; set; }

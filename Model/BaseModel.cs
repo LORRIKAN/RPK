@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RPK.Model
 {
-    public class BaseModel : IDataErrorInfo
+    public abstract class BaseModel : IDataErrorInfo
     {
         [Browsable(false)]
         public virtual string this[string property]
@@ -45,5 +45,8 @@ namespace RPK.Model
                     return null;
             }
         }
+
+        [Browsable(false)]
+        public abstract Range UnchangeableRows { get; }
     }
 }

@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Repository;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 using System.Windows.Forms;
 using RPK.Administrator.Presenter;
 using System.Threading.Tasks;
@@ -15,30 +11,39 @@ namespace RPK.Administrator.View
 {
     public partial class AdministratorForm : Form
     {
-        public event Func<IAsyncEnumerable<string>> GetContextsNamesAsync;
+        public event Func<IList<string>> GetContextsNames;
 
-        public event Func<string, IAsyncEnumerable<string>> GetContextEntitiesNamesAsync;
+        public event Func<string, IList<string>> GetContextEntitiesNames;
 
-        public event Func<(Form_PresenterMessage message, DataGridView dataGridView), Task<DataGridView>> BindDataGridViewAsync;
+        public event Func<(Form_PresenterMessage message, DataGridView dataGridView), DataGridView> BindDataGridView;
 
-        public event Func<(Form_PresenterMessage message, object value, string columnName), IAsyncEnumerable<ValidationResult>> ValidateValueAsync;
+        public event Func<(Form_PresenterMessage message, object value, string columnName, int rowIndex),
+            IAsyncEnumerable<ValidationResult>> ValidateValueAsync;
 
-        public event Func<Form_PresenterMessage, Task<bool>> AnyChangesAsync;
+        public event Func<Form_PresenterMessage, Task<bool>> AnyChangesForTableAsync;
+
+        public event Func<string, Task<bool>> AnyChangesForDbAsync;
 
         public event Func<Form_PresenterMessage, Task<bool>> AnyChangesToUndoAsync;
 
         public event Func<Form_PresenterMessage, Task<bool>> AnyChangesToRedoAsync;
 
-        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> AddRowAsync;
+        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TryAddRowAsync;
 
-        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TryUndoLastChangeAsync;
+        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TryUndo;
 
-        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TryRedoLastChangeAsync;
+        public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TryRedo;
 
         public event Func<Form_PresenterMessage, Task<(bool result, string errorMessage)>> TrySaveChangesAsync;
 
-        public event Func<(Form_PresenterMessage message, int rowIndex), 
+        public event Func<(Form_PresenterMessage message, int rowIndex),
             Task<(bool result, string errorMessage)>> TryDeleteRowAsync;
+
+        public event Action<Form_PresenterMessage> CancelAllChangesForTable;
+
+        public event Action<string> CancelAllChangesForDb;
+
+        public event Action ReloginRequired;
 
         public AdministratorForm()
         {
@@ -51,102 +56,131 @@ namespace RPK.Administrator.View
             addButt.Click += AddButt_Click;
             saveButt.Click += SaveButt_Click;
             deleteButt.Click += DeleteButt_Click;
-            undoButt.Click += UndoButt_Click;
-            redoButt.Click += RedoButt_Click;
+
+            exitButt.Click += (sender, e) => Close();
+        }
+
+        public void SetUserDescription(string userName, string userRole)
+        {
+            this.Text = $"Вы вошли как {userName}: {userRole}";
+        }
+
+        public void ShowMessage(string caption, string heading, string text, MessageType messageType)
+        {
+            TaskDialog.ShowDialog(new TaskDialogPage
+            {
+                Caption = caption,
+                Heading = heading,
+                Text = text,
+                Icon = (messageType) switch
+                {
+                    MessageType.Success => TaskDialogIcon.ShieldSuccessGreenBar,
+                    MessageType.Error => TaskDialogIcon.Error,
+                    MessageType.Warning => TaskDialogIcon.Warning,
+                    _ => TaskDialogIcon.Error
+                }
+            });
         }
 
         private async void RedoButt_Click(object sender, EventArgs e)
         {
-            (bool redoResult, string errorMessage) = await TryRedoLastChangeAsync(new Form_PresenterMessage
-            { ContextName = CurrDb, EntityName = CurrTable });
-
-            if (!redoResult)
+            await ExecuteEditActionAsync(async () =>
             {
-                TaskDialog.ShowDialog(new TaskDialogPage
-                {
-                    Caption = "Возврат изменения",
-                    Heading = "Возвратить изменение не удалось",
-                    Text = errorMessage,
-                    Buttons = { TaskDialogButton.Close },
-                    Icon = TaskDialogIcon.Error
-                });
-            }
-        }
+                (bool redoResult, string errorMessage) = await TryRedo(new Form_PresenterMessage
+                { ContextName = CurrDb, EntityName = CurrTable });
 
-        private async void UndoButt_Click(object sender, EventArgs e)
-        {
-            (bool undoResult, string errorMessage) = await TryUndoLastChangeAsync(new Form_PresenterMessage
-            { ContextName = CurrDb, EntityName = CurrTable });
-
-            if (!undoResult)
-            {
-                TaskDialog.ShowDialog(new TaskDialogPage
-                {
-                    Caption = "Отмена изменения",
-                    Heading = "Отменить изменение не удалось",
-                    Text = errorMessage,
-                    Buttons = { TaskDialogButton.Close },
-                    Icon = TaskDialogIcon.Error
-                });
-            }
-        }
-
-        private async void DeleteButt_Click(object sender, EventArgs e)
-        {
-            foreach (DataGridViewRow row in dataGridView.SelectedRows)
-            {
-                int rowIndex = row.Index;
-                (bool deletionResult, string errorMessage) = await TryDeleteRowAsync((new Form_PresenterMessage
-                { ContextName = CurrDb, EntityName = CurrTable }, row.Index));
-
-                if (!deletionResult)
+                if (!redoResult)
                 {
                     TaskDialog.ShowDialog(new TaskDialogPage
                     {
-                        Caption = "Удаление строки",
-                        Heading = $"Удалить строку {rowIndex + 1} не удалось",
+                        Caption = "Возврат изменения",
+                        Heading = "Возвратить изменение не удалось",
                         Text = errorMessage,
                         Buttons = { TaskDialogButton.Close },
                         Icon = TaskDialogIcon.Error
                     });
                 }
-            }
+            });
+        }
+
+        private async void UndoButt_Click(object sender, EventArgs e)
+        {
+            await ExecuteEditActionAsync(async () =>
+            {
+                (bool undoResult, string errorMessage) = await TryUndo(new Form_PresenterMessage
+                { ContextName = CurrDb, EntityName = CurrTable });
+
+                if (!undoResult)
+                {
+                    TaskDialog.ShowDialog(new TaskDialogPage
+                    {
+                        Caption = "Отмена изменения",
+                        Heading = "Отменить изменение не удалось",
+                        Text = errorMessage,
+                        Buttons = { TaskDialogButton.Close },
+                        Icon = TaskDialogIcon.Error
+                    });
+                }
+            });
+        }
+
+        private async void DeleteButt_Click(object sender, EventArgs e)
+        {
+            await ExecuteEditActionAsync(async () =>
+            {
+                foreach (DataGridViewRow row in dataGridView.SelectedRows)
+                {
+                    int rowIndex = row.Index;
+                    (bool deletionResult, string errorMessage) = await TryDeleteRowAsync((new Form_PresenterMessage
+                    { ContextName = CurrDb, EntityName = CurrTable }, row.Index));
+
+                    if (!deletionResult)
+                    {
+                        TaskDialog.ShowDialog(new TaskDialogPage
+                        {
+                            Caption = "Удаление строки",
+                            Heading = $"Удалить строку {rowIndex + 1} не удалось",
+                            Text = errorMessage,
+                            Buttons = { TaskDialogButton.Close },
+                            Icon = TaskDialogIcon.Error
+                        });
+                    }
+                }
+            });
         }
 
         private async void SaveButt_Click(object sender, EventArgs e)
         {
-            foreach (Control control in this.Controls)
-                control.Enabled = false;
-
-            (bool saveResult, string errorMessage) = await TrySaveChangesAsync(new Form_PresenterMessage
-            { ContextName = CurrDb, EntityName = CurrTable });
-
-            if (saveResult)
+            await ExecuteEditActionAsync(async () =>
             {
-                TaskDialog.ShowDialog(new TaskDialogPage
+                (bool saveResult, string errorMessage) = await TrySaveChangesAsync(new Form_PresenterMessage
+                { ContextName = CurrDb, EntityName = CurrTable });
+
+                if (saveResult)
                 {
-                    Caption = "Сохранение изменений",
-                    Heading = "Сохранение изменений прошло успешно",
-                    Text = errorMessage,
-                    Buttons = { TaskDialogButton.OK },
-                    Icon = TaskDialogIcon.ShieldSuccessGreenBar
-                });
-            }
-            else
-                TaskDialog.ShowDialog(new TaskDialogPage
-                {
-                    Caption = "Сохранение изменений",
-                    Heading = "Сохранить изменения не удалось",
-                    Buttons = { TaskDialogButton.Close },
-                    Icon = TaskDialogIcon.Error
-                });
+                    TaskDialog.ShowDialog(new TaskDialogPage
+                    {
+                        Caption = "Сохранение изменений",
+                        Heading = "Сохранение изменений прошло успешно",
+                        Text = errorMessage,
+                        Buttons = { TaskDialogButton.OK },
+                        Icon = TaskDialogIcon.ShieldSuccessGreenBar
+                    });
+                }
+                else
+                    TaskDialog.ShowDialog(new TaskDialogPage
+                    {
+                        Caption = "Сохранение изменений",
+                        Heading = "Сохранить изменения не удалось",
+                        Buttons = { TaskDialogButton.Close },
+                        Icon = TaskDialogIcon.Error
+                    });
+            });
         }
 
         private async void AddButt_Click(object sender, EventArgs e)
         {
-            CancellationTokenSourceForCellsChecks.Cancel();
-
-            (bool addResult, string errorMessage) = await AddRowAsync(new Form_PresenterMessage
+            (bool addResult, string errorMessage) = await TryAddRowAsync(new Form_PresenterMessage
             { ContextName = CurrDb, EntityName = CurrTable });
 
             if (!addResult)
@@ -165,131 +199,191 @@ namespace RPK.Administrator.View
             //e.Cancel = true;
         }
 
-        private async void LoadDbNamesAsync(object sender, EventArgs e)
+        private void LoadDbNamesAsync(object sender, EventArgs e)
         {
-            dbChooseComboBox.DataSource = null;
-
-            await foreach (string item in GetContextsNamesAsync())
-            {
-                dbChooseComboBox.Items.Add(item);
-            }
+            dbChooseComboBox.DataSource = GetContextsNames();
         }
 
-        private async void LoadTablesNamesAsync(object sender, EventArgs e)
+        private async void DbChooseComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
-            tableChooseComboBox.DataSource = null;
-
-            await foreach (string item in GetContextEntitiesNamesAsync(CurrDb))
+            await ExecuteEditActionAsync(async () =>
             {
-                tableChooseComboBox.Items.Add(item);
-            }
+                bool close = await AskToSaveChangesAsync(
+                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = null });
+
+                if (!close)
+                    return;
+
+                tableChooseComboBox.DataSource = GetContextEntitiesNames(CurrDb);
+            });
         }
 
+        string previouslySelectedTable;
         private async void TableChooseComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
-            dbChooseComboBox.Enabled = false;
-            tableChooseComboBox.Enabled = false;
-
-            dataGridView = await BindDataGridViewAsync((new Form_PresenterMessage
+            await ExecuteEditActionAsync(async () =>
             {
-                ContextName = CurrDb,
-                EntityName = CurrTable,
-            }, dataGridView));
+                dbChooseComboBox.Enabled = false;
+                tableChooseComboBox.Enabled = false;
 
-            dbChooseComboBox.Enabled = true;
-            tableChooseComboBox.Enabled = true;
+                bool close = await AskToSaveChangesAsync(
+                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = previouslySelectedTable });
 
-            deleteButt.Enabled = dataGridView.Rows.Cast<DataGridViewRow>().Any();
-        }
+                previouslySelectedTable = CurrTable;
 
-        private async Task CheckControlsAndEnableButtsAsync(CancellationToken cancellationToken)
-        {
-            saveButt.Enabled = false;
-            undoButt.Enabled = await AnyChangesToUndoAsync(new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
-            redoButt.Enabled = await AnyChangesToRedoAsync(new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
-            deleteButt.Enabled = dataGridView.Rows.Cast<DataGridViewRow>().Any();
-
-            progressBar.Visible = true;
-
-            bool allCellsAreValidated = true;
-
-            await Task.Run(() =>
-            {
-                try
+                if (!close)
                 {
-                    int cellsChecked = 0;
-                    int cellsCount = dataGridView.Rows.Cast<DataGridViewRow>().Select(r => r.Cells.Count).Sum();
-
-                    foreach (DataGridViewRow row in dataGridView.Rows.Cast<DataGridViewRow>())
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        foreach (DataGridViewCell cell in row.Cells)
-                        {
-                            cellsChecked++;
-                            if (!string.IsNullOrEmpty(cell.ErrorText))
-                            {
-                                allCellsAreValidated = false;
-                                break;
-                            }
-                        }
-
-                        if (!allCellsAreValidated)
-                            break;
-
-                        this.Invoke(new MethodInvoker(() => progressBar.Value = cellsChecked / cellsCount));
-                    }
-                }
-                catch (OperationCanceledException)
-                {
+                    dbChooseComboBox.Enabled = true;
+                    tableChooseComboBox.Enabled = true;
                     return;
                 }
-            }, cancellationToken);
 
-            progressBar.Visible = false;
+                dataGridView = BindDataGridView((new Form_PresenterMessage
+                {
+                    ContextName = CurrDb,
+                    EntityName = CurrTable,
+                }, dataGridView));
 
-            if (cancellationToken.IsCancellationRequested)
+                dbChooseComboBox.Enabled = true;
+                tableChooseComboBox.Enabled = true;
+
+                deleteButt.Enabled = dataGridView.Rows.Count > 0;
+            });
+        }
+
+        public void SetInitialData()
+        {
+            reloginButt.Click += async (sender, e) =>
             {
-                return;
-            }
+                bool close = await AskToSaveChangesAsync(
+                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = null });
 
-            saveButt.Enabled = allCellsAreValidated && 
-                await AnyChangesAsync(new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
+                if (close)
+                    ReloginRequired();
+            };
+        }
+
+        private async Task ExecuteEditActionAsync(Action editAction)
+        {
+            saveButt.Enabled = false;
+            deleteButt.Enabled = false;
+            addButt.Enabled = false;
+
+            foreach (Control control in this.Controls)
+                control.Enabled = false;
+
+            editAction();
+
+            foreach (Control control in this.Controls)
+                control.Enabled = true;
+
+            saveButt.Enabled = DataGridViewCellsHaveErrors.Values.All(error => error is false) &&
+                await AnyChangesForTableAsync(
+                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
+            deleteButt.Enabled = dataGridView.Rows.Count > 0;
+            addButt.Enabled = true;
         }
 
         private async void DataGridView_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            dataGridView[e.ColumnIndex, e.RowIndex].ErrorText = null;
-
-            var validationResults = ValidateValueAsync((new Form_PresenterMessage
-            {
-                ContextName = CurrDb,
-                EntityName = CurrTable,
-            },
-                dataGridView[e.ColumnIndex, e.RowIndex].Value, dataGridView.Columns[e.ColumnIndex].DataPropertyName));
-
+            DataGridViewCell currentCell = dataGridView[e.ColumnIndex, e.RowIndex];
             try
             {
-                await foreach (ValidationResult error in validationResults)
+                await ExecuteEditActionAsync(async () =>
                 {
-                    dataGridView[e.ColumnIndex, e.RowIndex].ErrorText += error?.ErrorMessage;
-                }
+                    DataGridViewCell currentCell = dataGridView[e.ColumnIndex, e.RowIndex];
+
+                    currentCell.ErrorText = null;
+
+                    var validationResults = ValidateValueAsync((new Form_PresenterMessage
+                    {
+                        ContextName = CurrDb,
+                        EntityName = CurrTable,
+                    },
+                        currentCell.Value, dataGridView.Columns[e.ColumnIndex].DataPropertyName, e.RowIndex));
+
+                    await foreach (ValidationResult validationResult in validationResults)
+                    {
+                        currentCell.ErrorText += validationResult;
+                    }
+
+                    DataGridViewCellsHaveErrors[currentCell] = !string.IsNullOrEmpty(currentCell.ErrorText);
+                });
             }
             catch
             {
-                dataGridView[e.ColumnIndex, e.RowIndex].ErrorText += $"В этой записи данный параметр изменить нельзя.";
+                currentCell.ErrorText = $"В этой записи данный параметр изменить нельзя.";
+            }
+        }
+
+        private async Task<bool> AskToSaveChangesAsync(Form_PresenterMessage message)
+        {
+            bool anyChanges;
+            if (string.IsNullOrEmpty(message.EntityName))
+                anyChanges = await AnyChangesForDbAsync(message.ContextName);
+            else
+                anyChanges = await AnyChangesForTableAsync(message);
+
+            if (anyChanges)
+            {
+                TaskDialogButton taskDialogResult = TaskDialog.ShowDialog(new TaskDialogPage
+                {
+                    Caption = "Сохранение изменений",
+                    Heading = "У вас есть несохранённые изменения",
+                    Text = "У вас есть несохранённые изменения. Хотите сохранить?",
+                    Buttons = { TaskDialogButton.Yes, TaskDialogButton.No, TaskDialogButton.Cancel },
+                    Icon = TaskDialogIcon.Information
+                });
+
+                if (taskDialogResult == TaskDialogButton.Yes)
+                    SaveButt_Click(saveButt, null);
+                else if (taskDialogResult == TaskDialogButton.No)
+                {
+                    if (string.IsNullOrEmpty(message.EntityName))
+                        CancelAllChangesForDb(message.ContextName);
+                    else
+                        CancelAllChangesForTable(message);
+                }
+                else if (taskDialogResult == TaskDialogButton.Cancel)
+                    return false;
             }
 
-            CancellationTokenSourceForCellsChecks?.Cancel();
-
-            CancellationTokenSourceForCellsChecks = new CancellationTokenSource();
-
-            await CheckControlsAndEnableButtsAsync(CancellationTokenSourceForCellsChecks.Token);
+            return true;
         }
+
+        private /*async*/ void DataGridView_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
+            //await ExecuteEditActionAsync(() =>
+            //{
+            //    foreach (DataGridViewCell cell in dataGridView.Rows[e.RowIndex].Cells)
+            //    {
+            //        if (cell.ReadOnly is false)
+            //            DataGridViewCellsHaveErrors[cell] = true;
+            //    }
+            //});
+        }
+
+        protected override async void OnFormClosing(FormClosingEventArgs e)
+        {
+            bool close = await AskToSaveChangesAsync(
+                new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
+
+            e.Cancel = !close;
+
+            base.OnFormClosing(e);
+        }
+
+        private Dictionary<DataGridViewCell, bool> DataGridViewCellsHaveErrors { get; set; } = new();
 
         private string CurrDb => dbChooseComboBox.Text;
 
         private string CurrTable => tableChooseComboBox.Text;
+    }
 
-        private CancellationTokenSource CancellationTokenSourceForCellsChecks { get; set; }
+    public enum MessageType
+    {
+        Success,
+        Warning,
+        Error
     }
 }

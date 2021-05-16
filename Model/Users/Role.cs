@@ -28,6 +28,8 @@ namespace RPK.Model.Users
         [Browsable(false)]
         public virtual ICollection<User> Users { get; set; }
 
+        public override Range UnchangeableRows => new(0, 1);
+
         public override bool Equals(object obj)
         {
             return Equals(obj as Role);

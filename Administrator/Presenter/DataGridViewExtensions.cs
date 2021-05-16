@@ -15,19 +15,13 @@ namespace RPK.Administrator.Presenter
 
     public static class DataGridViewExtensions
     {
-        private static Type GetDataType(this IBindingList data)
-        {
-            return data
-                    .GetType().GetProperties().First(prop => prop.GetIndexParameters().Length > 0).PropertyType;
-        }
-
         public static DataGridView Bind(this DataGridView grid, IBindingList data, ExtendedDbContext dbContext,
             bool autoGenerateColumns = true)
         {
             grid.DataSource = null;
             if (autoGenerateColumns)
             {
-                var dataType = GetDataType(data);
+                var dataType = data.GetDataType();
 
                 var properties = TypeDescriptor.GetProperties(dataType);
 
@@ -93,6 +87,7 @@ namespace RPK.Administrator.Presenter
                         c.DefaultCellStyle = new DataGridViewCellStyle { BackColor = Color.DarkGray };
                     c.ValueType = m.Type;
                     c.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
+                    c.SortMode = DataGridViewColumnSortMode.NotSortable;
                     return c;
                 });
 

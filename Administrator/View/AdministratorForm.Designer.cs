@@ -38,19 +38,16 @@ namespace RPK.Administrator.View
             this.panel1 = new System.Windows.Forms.Panel();
             this.dataGridView = new System.Windows.Forms.DataGridView();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
-            this.undoButt = new System.Windows.Forms.ToolStripButton();
-            this.redoButt = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.addButt = new System.Windows.Forms.ToolStripButton();
             this.deleteButt = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.saveButt = new System.Windows.Forms.ToolStripButton();
             this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
-            this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.changeAccountMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileButt = new System.Windows.Forms.ToolStripMenuItem();
+            this.reloginButt = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitButt = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutButt = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanel.SuspendLayout();
             this.dbChooseGroupBox.SuspendLayout();
             this.tableChooseGroupBox.SuspendLayout();
@@ -98,7 +95,7 @@ namespace RPK.Administrator.View
             this.dbChooseComboBox.Name = "dbChooseComboBox";
             this.dbChooseComboBox.Size = new System.Drawing.Size(928, 33);
             this.dbChooseComboBox.TabIndex = 0;
-            this.dbChooseComboBox.SelectedValueChanged += new System.EventHandler(this.LoadTablesNamesAsync);
+            this.dbChooseComboBox.SelectedValueChanged += new System.EventHandler(this.DbChooseComboBox_SelectedValueChanged);
             // 
             // tableChooseGroupBox
             // 
@@ -147,15 +144,13 @@ namespace RPK.Administrator.View
             this.dataGridView.Size = new System.Drawing.Size(934, 241);
             this.dataGridView.TabIndex = 1;
             this.dataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
+            this.dataGridView.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.DataGridView_RowsAdded);
             // 
             // toolStrip
             // 
             this.toolStrip.AutoSize = false;
             this.toolStrip.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.undoButt,
-            this.redoButt,
-            this.toolStripSeparator1,
             this.addButt,
             this.deleteButt,
             this.toolStripSeparator2,
@@ -166,33 +161,6 @@ namespace RPK.Administrator.View
             this.toolStrip.Size = new System.Drawing.Size(934, 50);
             this.toolStrip.TabIndex = 0;
             this.toolStrip.Text = "toolStrip1";
-            // 
-            // undoButt
-            // 
-            this.undoButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.undoButt.Enabled = false;
-            this.undoButt.Image = ((System.Drawing.Image)(resources.GetObject("undoButt.Image")));
-            this.undoButt.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.undoButt.Name = "undoButt";
-            this.undoButt.Size = new System.Drawing.Size(44, 45);
-            this.undoButt.Text = "toolStripButton1";
-            this.undoButt.ToolTipText = "Отменить изменение";
-            // 
-            // redoButt
-            // 
-            this.redoButt.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.redoButt.Enabled = false;
-            this.redoButt.Image = ((System.Drawing.Image)(resources.GetObject("redoButt.Image")));
-            this.redoButt.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.redoButt.Name = "redoButt";
-            this.redoButt.Size = new System.Drawing.Size(44, 45);
-            this.redoButt.Text = "toolStripButton2";
-            this.redoButt.ToolTipText = "Возвратить изменение";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 50);
             // 
             // addButt
             // 
@@ -242,40 +210,40 @@ namespace RPK.Administrator.View
             // 
             this.menuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileMenuItem,
-            this.aboutMenuItem});
+            this.fileButt,
+            this.aboutButt});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(940, 33);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip1";
             // 
-            // fileMenuItem
+            // fileButt
             // 
-            this.fileMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.changeAccountMenuItem,
-            this.exitMenuItem});
-            this.fileMenuItem.Name = "fileMenuItem";
-            this.fileMenuItem.Size = new System.Drawing.Size(69, 29);
-            this.fileMenuItem.Text = "Файл";
+            this.fileButt.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.reloginButt,
+            this.exitButt});
+            this.fileButt.Name = "fileButt";
+            this.fileButt.Size = new System.Drawing.Size(69, 29);
+            this.fileButt.Text = "Файл";
             // 
-            // changeAccountMenuItem
+            // reloginButt
             // 
-            this.changeAccountMenuItem.Name = "changeAccountMenuItem";
-            this.changeAccountMenuItem.Size = new System.Drawing.Size(316, 34);
-            this.changeAccountMenuItem.Text = "Сменить учётную запись";
+            this.reloginButt.Name = "reloginButt";
+            this.reloginButt.Size = new System.Drawing.Size(316, 34);
+            this.reloginButt.Text = "Сменить учётную запись";
             // 
-            // exitMenuItem
+            // exitButt
             // 
-            this.exitMenuItem.Name = "exitMenuItem";
-            this.exitMenuItem.Size = new System.Drawing.Size(316, 34);
-            this.exitMenuItem.Text = "Выход";
+            this.exitButt.Name = "exitButt";
+            this.exitButt.Size = new System.Drawing.Size(316, 34);
+            this.exitButt.Text = "Выход";
             // 
-            // aboutMenuItem
+            // aboutButt
             // 
-            this.aboutMenuItem.Name = "aboutMenuItem";
-            this.aboutMenuItem.Size = new System.Drawing.Size(141, 29);
-            this.aboutMenuItem.Text = "О программе";
+            this.aboutButt.Name = "aboutButt";
+            this.aboutButt.Size = new System.Drawing.Size(141, 29);
+            this.aboutButt.Text = "О программе";
             // 
             // AdministratorForm
             // 
@@ -308,22 +276,19 @@ namespace RPK.Administrator.View
         private System.Windows.Forms.GroupBox dbChooseGroupBox;
         private System.Windows.Forms.GroupBox tableChooseGroupBox;
         private System.Windows.Forms.MenuStrip menuStrip;
-        private System.Windows.Forms.ToolStripMenuItem fileMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem changeAccountMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem exitMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reloginButt;
         private InterfaceElements.SharedElements.CustomComboBox dbChooseComboBox;
         private System.Windows.Forms.ComboBox tableChooseComboBox;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.ToolStrip toolStrip;
-        private System.Windows.Forms.ToolStripButton undoButt;
-        private System.Windows.Forms.ToolStripButton redoButt;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton addButt;
         private System.Windows.Forms.ToolStripButton deleteButt;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton saveButt;
         private System.Windows.Forms.ToolStripProgressBar progressBar;
+        private System.Windows.Forms.ToolStripMenuItem fileButt;
+        private System.Windows.Forms.ToolStripMenuItem exitButt;
+        private System.Windows.Forms.ToolStripMenuItem aboutButt;
     }
 }

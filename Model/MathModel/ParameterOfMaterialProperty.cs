@@ -27,6 +27,8 @@ namespace RPK.Model.MathModel
         [Browsable(false)]
         public virtual Parameter Parameter { get; set; }
 
+        public override Range UnchangeableRows => new(0, 2);
+
         public override bool Equals(object obj)
         {
             return Equals(obj as ParameterOfMaterialProperty);

@@ -24,6 +24,8 @@ namespace RPK.Model.Users
         [Browsable(false)]
         public virtual Role Role { get; set; }
 
+        public override Range UnchangeableRows => new(0, 1);
+
         public override bool Equals(object obj)
         {
             return Equals(obj as User);

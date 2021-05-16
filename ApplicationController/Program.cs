@@ -63,7 +63,7 @@ namespace ApplicationController
 
                 loginPresenter.Form.Hide();
 
-                chosenRolePresenter.Run().Show();
+                chosenRolePresenter.Run(user).Show();
             };
 
             Application.Run(loginPresenter.Run());

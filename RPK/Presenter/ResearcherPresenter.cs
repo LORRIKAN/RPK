@@ -109,5 +109,12 @@ namespace RPK.Researcher.Presenter
             ResearcherForm.ReloginRequired += ReloginRequired;
             return base.Run();
         }
+
+        public override Form Run(User user)
+        {
+            ResearcherForm.SetUserDescription(user.Login, user.Role.RoleName);
+
+            return ResearcherForm;
+        }
     }
 }

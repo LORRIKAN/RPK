@@ -72,6 +72,11 @@ namespace RPK.Researcher.View
             this.Shown += (sender, e) => InitializeMemoryOutput(cancellationToken);
         }
 
+        public void SetUserDescription(string userName, string userRole)
+        {
+            this.Text = $"Вы вошли как {userName}: {userRole}";
+        }
+
         private void ExportResultsStripMenuItem_Click(object? sender, EventArgs e)
         {
             exportResultsStripMenuItem.Enabled = false;

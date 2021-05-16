@@ -79,8 +79,16 @@ namespace RPK.Repository.Users
             Users.Load();
         }
 
-        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName)
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName, 
+            int rowIndex)
         {
+            if (await RowCanBeChangedAsync(dataSource, rowIndex) is false)
+            {
+                yield return await ValueTask.FromResult(new RowIndexIsInvalid("Данную строку нельзя модифицировать " +
+                    "так как она является базовой частью программы."));
+                yield break;
+            }
+
             yield return await ValueTask.FromResult<ValidationResult>(null);
         }
     }
