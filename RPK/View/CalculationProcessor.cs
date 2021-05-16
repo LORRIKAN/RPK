@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using RPK.InterfaceElements.ResearcherFormElements;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -17,6 +18,8 @@ namespace RPK.Researcher.View
 
         private CancellationToken CancellationToken { get; set; }
 
+        private string? ErrorMessage { get; set; }
+
         private void ProgressIncrementor(double increment)
         {
             CalculationProgressIndicator += increment;
@@ -24,6 +27,7 @@ namespace RPK.Researcher.View
 
         public async Task<(CalculationResults?, TaskDialogResult)> ProceedCalculationAsync(IEnumerable<Parameter> parameters)
         {
+            ErrorMessage = null;
             CalculationProgressIndicator = 0;
             var calculationDialog = new CalculationDialog();
             calculationDialog.GetCalculationProgress += CalculationDialog_GetProgress;
@@ -51,7 +55,11 @@ namespace RPK.Researcher.View
                     calculationResultsInner = await CalculationFunc!.Invoke(calculationParameters);
                     calculationResultsInner!.CalculationTime = stopwatch.ElapsedMilliseconds;
                 }
-                catch { calculationResultsInner = null; }
+                catch (OperationCanceledException) { calculationResultsInner = null; }
+                catch {
+                    ErrorMessage = "Процесс расчёта был завершён с ошибкой. Возможно, не хватает одного из параметров, или он имеет " +
+                "неподходящее для математической модели значение."; calculationResultsInner = null; }
+
                 stopwatch.Stop();
 
                 return calculationResultsInner;
@@ -70,11 +78,12 @@ namespace RPK.Researcher.View
             return (calculationResults, taskDialogResult);
         }
 
-        private async IAsyncEnumerable<int> CalculationDialog_GetProgress()
+        private async IAsyncEnumerable<(int progress, string? errorMessage)> CalculationDialog_GetProgress()
         {
+            yield return (0, ErrorMessage);
             while (CalculationTask?.IsCompleted is false)
             {
-                yield return (int)CalculationProgressIndicator;
+                yield return ((int)CalculationProgressIndicator, ErrorMessage);
 
                 await Task.Delay(100);
             }

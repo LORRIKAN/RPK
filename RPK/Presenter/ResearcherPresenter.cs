@@ -79,9 +79,13 @@ namespace RPK.Researcher.Presenter
 
         private IEnumerable<View.Parameter> ResearcherForm_SetSolvingParameters(Material material, Canal canal)
         {
-            double canalLength = canal.CanalGeometryParameters.
-                FirstOrDefault(p => p.Parameter is { Name: "Длина" } or { Designation: "L" })
-                .ParameterValue;
+            CanalGeometryParameter canalGeometryParameter = canal.CanalGeometryParameters.
+                FirstOrDefault(p => p.Parameter is { Name: "Длина" } or { Designation: "L" });
+
+            if (canalGeometryParameter is null)
+                yield break;
+
+            double canalLength = canalGeometryParameter.ParameterValue;
 
             yield return new ParameterWithBounds
                 (
@@ -114,7 +118,7 @@ namespace RPK.Researcher.Presenter
         {
             ResearcherForm.SetUserDescription(user.Login, user.Role.RoleName);
 
-            return ResearcherForm;
+            return this.Run();
         }
     }
 }

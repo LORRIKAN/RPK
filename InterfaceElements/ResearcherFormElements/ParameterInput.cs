@@ -62,14 +62,20 @@ namespace RPK.InterfaceElements.ResearcherFormElements
         protected object? value;
         public virtual object? Value
         {
-            get => value; set
+            get => value; 
+            set
             {
+                Parameter!.Value = value;
                 this.value = value;
                 InputTextBox.Text = this.value?.ToString();
                 if (string.IsNullOrEmpty(InputTextBox.Text) is false && InputTextBox.Text is not null)
                     Validator?.ValidateParameter(InputTextBox.Text);
             }
         }
+
+        [Browsable(false)]
+        [ReadOnly(true)]
+        public IParameter? Parameter { get; set; }
 
         public event Action<ParameterInput, object>? ParsedAndValidated;
 

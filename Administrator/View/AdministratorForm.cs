@@ -153,6 +153,18 @@ namespace RPK.Administrator.View
         {
             await ExecuteEditActionAsync(async () =>
             {
+                if (DataGridViewCellsHaveErrors.Values.Any(e => e is true))
+                {
+                    TaskDialog.ShowDialog(new TaskDialogPage
+                    {
+                        Caption = "Сохранение изменений",
+                        Heading = "Сохранить изменения не удалось",
+                        Text = "Сохранить изменения не удалось, так как в таблице есть неверно заполненные ячейки.",
+                        Buttons = { TaskDialogButton.Close },
+                        Icon = TaskDialogIcon.Error
+                    });
+                }
+
                 (bool saveResult, string errorMessage) = await TrySaveChangesAsync(new Form_PresenterMessage
                 { ContextName = CurrDb, EntityName = CurrTable });
 
@@ -208,17 +220,22 @@ namespace RPK.Administrator.View
         {
             await ExecuteEditActionAsync(async () =>
             {
+                PreviousDb ??= dbChooseComboBox.Items[0].ToString();
+
                 bool close = await AskToSaveChangesAsync(
-                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = null });
+                    new Form_PresenterMessage { ContextName = PreviousDb, EntityName = null });
+
+                PreviousDb = CurrDb;
 
                 if (!close)
                     return;
+
+                DataGridViewCellsHaveErrors.Clear();
 
                 tableChooseComboBox.DataSource = GetContextEntitiesNames(CurrDb);
             });
         }
 
-        string previouslySelectedTable;
         private async void TableChooseComboBox_SelectedValueChanged(object sender, EventArgs e)
         {
             await ExecuteEditActionAsync(async () =>
@@ -227,9 +244,10 @@ namespace RPK.Administrator.View
                 tableChooseComboBox.Enabled = false;
 
                 bool close = await AskToSaveChangesAsync(
-                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = previouslySelectedTable });
+                    new Form_PresenterMessage { ContextName = PreviousDb, EntityName = null });
 
-                previouslySelectedTable = CurrTable;
+                PreviousTable = CurrTable;
+                PreviousDb = CurrDb;
 
                 if (!close)
                 {
@@ -237,6 +255,8 @@ namespace RPK.Administrator.View
                     tableChooseComboBox.Enabled = true;
                     return;
                 }
+
+                DataGridViewCellsHaveErrors.Clear();
 
                 dataGridView = BindDataGridView((new Form_PresenterMessage
                 {
@@ -291,23 +311,30 @@ namespace RPK.Administrator.View
             {
                 await ExecuteEditActionAsync(async () =>
                 {
-                    DataGridViewCell currentCell = dataGridView[e.ColumnIndex, e.RowIndex];
-
-                    currentCell.ErrorText = null;
-
-                    var validationResults = ValidateValueAsync((new Form_PresenterMessage
+                    try
                     {
-                        ContextName = CurrDb,
-                        EntityName = CurrTable,
-                    },
-                        currentCell.Value, dataGridView.Columns[e.ColumnIndex].DataPropertyName, e.RowIndex));
+                        DataGridViewCell currentCell = dataGridView[e.ColumnIndex, e.RowIndex];
 
-                    await foreach (ValidationResult validationResult in validationResults)
-                    {
-                        currentCell.ErrorText += validationResult;
+                        currentCell.ErrorText = null;
+
+                        var validationResults = ValidateValueAsync((new Form_PresenterMessage
+                        {
+                            ContextName = CurrDb,
+                            EntityName = CurrTable,
+                        },
+                            currentCell.Value, dataGridView.Columns[e.ColumnIndex].DataPropertyName, e.RowIndex));
+
+                        await foreach (ValidationResult validationResult in validationResults)
+                        {
+                            currentCell.ErrorText += validationResult;
+                        }
+
+                        DataGridViewCellsHaveErrors[currentCell] = !string.IsNullOrEmpty(currentCell.ErrorText);
                     }
-
-                    DataGridViewCellsHaveErrors[currentCell] = !string.IsNullOrEmpty(currentCell.ErrorText);
+                    catch
+                    {
+                        currentCell.ErrorText = $"В этой записи данный параметр изменить нельзя.";
+                    }
                 });
             }
             catch
@@ -378,6 +405,10 @@ namespace RPK.Administrator.View
         private string CurrDb => dbChooseComboBox.Text;
 
         private string CurrTable => tableChooseComboBox.Text;
+
+        private string PreviousDb { get; set; }
+
+        private string PreviousTable { get; set; }
     }
 
     public enum MessageType

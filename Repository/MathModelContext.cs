@@ -154,7 +154,7 @@ namespace RPK.Repository.MathModel
             return "Математическая модель";
         }
 
-        private List<long> ParametersOccupiedIds { get; set; } = new();
+        private Dictionary<IBindingList, List<long>> ParametersOccupiedIds { get; set; } = new();
 
         private List<string> ParametersIdNames { get; set; }
 
@@ -208,7 +208,7 @@ namespace RPK.Repository.MathModel
                     yield return await ValueTask.FromResult(new ValidationResult("Id параметра не может быть равен нулю."));
                     yield break;
                 }
-                if (ParametersOccupiedIds.Contains(longValue))
+                if (ParametersOccupiedIds[dataSource].Contains(longValue))
                 {
                     yield return await ValueTask.FromResult(new ValidationResult("Этот параметр уже является " +
                         "параметром другого типа."));
@@ -220,9 +220,33 @@ namespace RPK.Repository.MathModel
 
         private void SetOccupiedIds()
         {
-            ParametersOccupiedIds = GetDbSetsInternal()
-                .Where(bl => bl.GetDataType().IsSubclassOf(typeof(ParameterTypeBase)))
-                .SelectMany(bl => bl.Cast<ParameterTypeBase>().Select(pc => pc.ParameterId)).ToList();
+            ParametersOccupiedIds = new Dictionary<IBindingList, List<long>>();
+
+            IEnumerable<IBindingList> dbSets = GetDbSetsInternal();
+
+            foreach (IBindingList dbSet in dbSets)
+            {
+                Type dataType = dbSet.GetDataType();
+
+                if (!dataType.IsSubclassOf(typeof(ParameterTypeBase)))
+                    continue;
+
+                ParametersOccupiedIds[dbSet] = new List<long>();
+
+                foreach (IBindingList otherDbSet in dbSets)
+                {
+                    Type otherDbSetDataType = otherDbSet.GetDataType();
+
+                    if (!otherDbSetDataType.IsSubclassOf(typeof(ParameterTypeBase)) 
+                        || otherDbSetDataType.IsAssignableTo(dataType))
+                        continue;
+
+                    foreach (ParameterTypeBase parameterType in otherDbSet)
+                    {
+                        ParametersOccupiedIds[dbSet].Add(parameterType.ParameterId);
+                    }
+                }
+            }
         }
 
         private void SetParametersIdsNames()

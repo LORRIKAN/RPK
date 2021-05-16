@@ -1,9 +1,10 @@
 ﻿#nullable enable
+using RPK.InterfaceElements.ResearcherFormElements;
 using RPK.Model.MathModel;
 
 namespace RPK.Researcher.View
 {
-    public record Parameter
+    public record Parameter : IParameter
     {
         public Parameter(long? parameterId, string name, string designation, string? measureUnit, object? value)
         {

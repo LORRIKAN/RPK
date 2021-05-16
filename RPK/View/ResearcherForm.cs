@@ -253,6 +253,7 @@ namespace RPK.Researcher.View
                 {
                     ParameterName = parameter.Name,
                     MeasureUnit = parameter.MeasureUnit,
+                    Parameter = parameter
                 };
 
                 parameterInput.ParsedAndValidated += InputControlAcquireResult;
@@ -288,14 +289,6 @@ namespace RPK.Researcher.View
         {
             errorProvider.SetError(inputControl.MeasureUnitLabel, errorMessage);
 
-            try
-            {
-                Parameter parameter = InputControlsAndParameters[inputControl];
-
-                InputControlsAndParameters[inputControl].Value = null;
-            }
-            catch { }
-
             ChangeTabPageStatus(tabControl.SelectedTab);
 
             TryEnableCalculateButt();
@@ -303,24 +296,18 @@ namespace RPK.Researcher.View
 
         private void TryEnableCalculateButt()
         {
-            calculateStripMenuItem.Enabled =
-                InputControlsAndParameters.Keys
-                .All(parameterInput => parameterInput.ParameterInputStatus is ParameterInputStatus.Validated) &&
-                !InputControlsAndParameters.Keys
-                .All(parameterInput => parameterInput is ParameterOutput);
+            calculateStripMenuItem.Enabled = false;
+
+            IEnumerable<TabPage> formTabPages = FindAllChildControls<TabPage>(this.Controls).Except(new[] { resultsPage });
+
+            calculateStripMenuItem.Enabled = formTabPages
+                .All(ftb => FindAllChildControls<ParameterInput>(ftb.Controls)
+                .All(pi => pi.ParameterInputStatus is ParameterInputStatus.Validated));
         }
 
         private void InputControlAcquireResult(ParameterInput inputControl, object result)
         {
             errorProvider.SetError(inputControl.MeasureUnitLabel, null);
-
-            try
-            {
-                Parameter parameter = InputControlsAndParameters[inputControl];
-
-                InputControlsAndParameters[inputControl].Value = result;
-            }
-            catch { }
 
             ChangeTabPageStatus(tabControl.SelectedTab);
 
@@ -354,6 +341,8 @@ namespace RPK.Researcher.View
                     (ComboBox comboBox, EventArgs cE) = InputControlsFillerAwaiters.Dequeue();
                     ComboBox_NewIndexSelected(comboBox, cE);
                 }
+
+                TryEnableCalculateButt();
             }));
         }
 
@@ -398,12 +387,11 @@ namespace RPK.Researcher.View
 
             bool tabPageIsSelected = default;
             bool anyComboBoxDontHaveSelectedItem = default;
-            bool anyControlFound = inputControls.Any() || comboBoxes.Any();
 
             tabPageIsSelected = tabControl.SelectedTab == tabPage;
             anyComboBoxDontHaveSelectedItem = comboBoxes.Any(cb => cb.SelectedItem is null);
 
-            if (!anyControlFound || anyComboBoxDontHaveSelectedItem ||
+            if (anyComboBoxDontHaveSelectedItem ||
                 wrongControls.Any(wrngCntrl => wrngCntrl.ParameterInputStatus is ParameterInputStatus.IsNullOrEmpty))
                 if (tabPageIsSelected)
                     return TabPageStatus.Editing;
@@ -436,6 +424,9 @@ namespace RPK.Researcher.View
 
             int parametersCount = parameterInputs.Count;
 
+            if (parametersCount is 0)
+                return;
+
             float rowsSizeInPercent = 100 / parametersCount;
 
             tableLayoutPanel.RowCount = parametersCount;
@@ -450,15 +441,11 @@ namespace RPK.Researcher.View
 
                 ParameterInput parameterInput = parameterInputs.Keys.ElementAt(i);
 
-                InputControlsAndParameters[parameterInput] = parameterInputs[parameterInput];
-
                 parameterInput.Dock = DockStyle.Fill;
 
                 tableLayoutPanel.Controls.Add(parameterInput, 0, i);
             }
         }
-
-        private Dictionary<ParameterInput, Parameter> InputControlsAndParameters { get; set; } = new();
 
         private Dictionary<TabPage, TabPageStatus> InputPagesStatuses { get; set; } = new();
 
@@ -478,6 +465,7 @@ namespace RPK.Researcher.View
 
         private async void CalculateStripMenuItem_Click(object? sender, EventArgs e)
         {
+            DataToExport = null;
             VisualizationProcessor.CancelVisualization();
             PrepareOutputControls();
             SetEnabledCertainControlsDueToVisualization(false);
@@ -485,8 +473,37 @@ namespace RPK.Researcher.View
             var calculationProcessor = new CalculationProcessor();
             calculationProcessor.CalculationFunc += CalculationRequiredAsync;
 
+            static Parameter? SelectParam(ParameterInput paramInput)
+            {
+                if (paramInput.Parameter is not Parameter param)
+                    return null;
+
+                param.Value = paramInput.Value;
+
+                return param;
+            }
+
+            IEnumerable<Parameter> canalCharacteristics = FindAllChildControls<ParameterInput>(canalGeometryParametersLayout.Controls)
+                .Select(pi => SelectParam(pi)).OfType<Parameter>();
+
+            IEnumerable<Parameter> materialPropertyParameters = FindAllChildControls<ParameterInput>(materialPropertiesLayout.Controls)
+                .Select(pi => SelectParam(pi)).OfType<Parameter>();
+
+            IEnumerable<Parameter> variableParameters = FindAllChildControls<ParameterInput>(variableParametersLayout.Controls)
+                .Select(pi => SelectParam(pi)).OfType<Parameter>();
+
+            IEnumerable<Parameter> empiricalCoefficientsOfMathModel = FindAllChildControls<ParameterInput>
+                (empiricalCoefficientsOfMathModelLayout.Controls)
+                .Concat(FindAllChildControls<ParameterInput>(solvingMethodParametersLayout.Controls))
+                .Select(pi => SelectParam(pi)).OfType<Parameter>();
+
+            IEnumerable<Parameter> allParameters = canalCharacteristics
+                .Concat(materialPropertyParameters)
+                .Concat(variableParameters)
+                .Concat(empiricalCoefficientsOfMathModel);
+
             (CalculationResults? calculationResults, TaskDialogResult taskDialogResult) = await
-                calculationProcessor.ProceedCalculationAsync(InputControlsAndParameters.Values);
+                calculationProcessor.ProceedCalculationAsync(allParameters);
 
             LastCalculatedResults = calculationResults;
 
@@ -494,18 +511,10 @@ namespace RPK.Researcher.View
 
             SetEnabledCertainControlsDueToVisualization(true);
 
-            if (calculationResults is null || taskDialogResult is TaskDialogResult.Cancel)
+            if (taskDialogResult is TaskDialogResult.Cancel 
+                || taskDialogResult is TaskDialogResult.Close 
+                || calculationResults is null)
                 return;
-
-            IEnumerable<Parameter> canalCharacteristics = InputControlsAndParameters.Where(p => p.Key.Parent == canalGeometryParametersLayout).Select(p => p.Value);
-
-            IEnumerable<Parameter> materialPropertyParameters = InputControlsAndParameters.Where(p => p.Key.Parent == materialPropertiesLayout).Select(p => p.Value);
-
-            IEnumerable<Parameter> variableParameters = InputControlsAndParameters.Where(p => p.Key.Parent == variableParametersLayout).Select(p => p.Value);
-
-            IEnumerable<Parameter> empiricalCoefficientsOfMathModel = InputControlsAndParameters
-                .Where(p => p.Key.Parent == empiricalCoefficientsOfMathModelLayout ||
-                p.Key.Parent == solvingMethodParametersLayout).Select(p => p.Value);
 
             DataToExport = new DataToExport
             {
@@ -575,7 +584,7 @@ namespace RPK.Researcher.View
 
             resultsTableGroupBox.Text = ($"Таблица результатов");
 
-            exportResultsStripMenuItem.Enabled = true;
+            exportResultsStripMenuItem.Enabled = DataToExport is not null;
             reloginStripMenuItem.Enabled = true;
         }
 
@@ -606,8 +615,9 @@ namespace RPK.Researcher.View
 
         private long GetCoordinatePrecision()
         {
+            IEnumerable<ParameterInput> inputControls = FindAllChildControls<ParameterInput>(solvingMethodParametersLayout.Controls);
             ParameterInput? stepInput =
-                InputControlsAndParameters.Keys.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
+                inputControls.FirstOrDefault(paramInput => paramInput.ParameterName.Contains("Шаг решения"));
 
             if (stepInput is null)
                 return 0;

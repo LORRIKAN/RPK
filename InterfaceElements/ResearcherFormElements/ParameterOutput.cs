@@ -13,7 +13,8 @@ namespace RPK.InterfaceElements.ResearcherFormElements
 
         public override object? Value
         {
-            get => base.Value; set
+            get => base.Value; 
+            set
             {
                 base.value = value;
                 InputTextBox.Text = value?.ToString();

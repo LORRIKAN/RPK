@@ -11,18 +11,24 @@ namespace RPK.InterfaceElements.ResearcherFormElements
         {
             InitializeCalculationInProgressPage();
             InitializeFinishedPage();
+            InitializeErrorPage();
         }
 
-        public event Func<IAsyncEnumerable<int>> GetCalculationProgress;
+#nullable enable
+        public event Func<IAsyncEnumerable<(int progress, string? errorMessage)>> GetCalculationProgress;
+#nullable disable
 
         TaskDialogPage CalculationInProgressPage { get; set; }
 
-        TaskDialogPage FinishedPage { get; set; }
+        TaskDialogPage SuccessPage { get; set; }
+
+        TaskDialogPage ErrorPage { get; set; }
 
         TaskDialogButton ShowResultsButton { get; set; } = new TaskDialogCommandLinkButton("Показать результаты");
 
         TaskDialogButton CancelButton { get; set; } = new TaskDialogButton("Отмена") { Enabled = false, AllowCloseDialog = true };
 
+#nullable enable
         private void InitializeCalculationInProgressPage()
         {
             CalculationInProgressPage = new TaskDialogPage()
@@ -62,8 +68,15 @@ namespace RPK.InterfaceElements.ResearcherFormElements
             {
                 var progressBar = CalculationInProgressPage.ProgressBar;
 
-                await foreach (int progress in GetCalculationProgress())
+                string? finalErrorMessage = null;
+
+                await foreach ((int progress, string? errorMessage) in GetCalculationProgress())
                 {
+                    finalErrorMessage = errorMessage;
+
+                    if (finalErrorMessage is not null)
+                        break;
+
                     if (progressBar.State is TaskDialogProgressBarState.Marquee)
                         progressBar.State = TaskDialogProgressBarState.Normal;
 
@@ -71,13 +84,23 @@ namespace RPK.InterfaceElements.ResearcherFormElements
                     CalculationInProgressPage.Expander.Text = $"Процесс расчёта: {progress} %";
                 }
 
-                try { CalculationInProgressPage.Navigate(FinishedPage); } catch { }
+                try
+                {
+                    if (finalErrorMessage is null)
+                        CalculationInProgressPage.Navigate(SuccessPage);
+                    else
+                    {
+                        ErrorPage.Text = finalErrorMessage;
+                        CalculationInProgressPage.Navigate(ErrorPage);
+                    }
+                }
+                catch { }
             };
         }
 
         private void InitializeFinishedPage()
         {
-            FinishedPage = new TaskDialogPage()
+            SuccessPage = new TaskDialogPage()
             {
                 Caption = "Процесс расчёта",
                 Heading = "Расчёт завершен!",
@@ -88,6 +111,17 @@ namespace RPK.InterfaceElements.ResearcherFormElements
                     TaskDialogButton.Close,
                     ShowResultsButton
                 }
+            };
+        }
+
+        private void InitializeErrorPage()
+        {
+            ErrorPage = new TaskDialogPage
+            {
+                Caption = "Процесс расчёта",
+                Heading = "Процесс расчёта не удался",
+                Icon = TaskDialogIcon.Error,
+                Buttons = { TaskDialogButton.Close }
             };
         }
 
