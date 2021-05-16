@@ -298,8 +298,7 @@ namespace RPK.Administrator.View
                 control.Enabled = true;
 
             saveButt.Enabled = DataGridViewCellsHaveErrors.Values.All(error => error is false) &&
-                await AnyChangesForTableAsync(
-                    new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
+                await AnyChangesForDbAsync(CurrDb);
             deleteButt.Enabled = dataGridView.Rows.Count > 0;
             addButt.Enabled = true;
         }
@@ -378,22 +377,10 @@ namespace RPK.Administrator.View
             return true;
         }
 
-        private /*async*/ void DataGridView_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
-        {
-            //await ExecuteEditActionAsync(() =>
-            //{
-            //    foreach (DataGridViewCell cell in dataGridView.Rows[e.RowIndex].Cells)
-            //    {
-            //        if (cell.ReadOnly is false)
-            //            DataGridViewCellsHaveErrors[cell] = true;
-            //    }
-            //});
-        }
-
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             bool close = await AskToSaveChangesAsync(
-                new Form_PresenterMessage { ContextName = CurrDb, EntityName = CurrTable });
+                new Form_PresenterMessage { ContextName = CurrDb, EntityName = null });
 
             e.Cancel = !close;
 

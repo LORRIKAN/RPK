@@ -144,7 +144,6 @@ namespace RPK.Administrator.View
             this.dataGridView.Size = new System.Drawing.Size(934, 241);
             this.dataGridView.TabIndex = 1;
             this.dataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
-            this.dataGridView.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.DataGridView_RowsAdded);
             // 
             // toolStrip
             // 

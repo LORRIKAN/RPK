@@ -140,7 +140,8 @@ namespace RPK.Administrator.Presenter
 
         private async Task<bool> AdministratorForm_AnyChangesForContextAsync(string contextName)
         {
-            return await Task.FromResult(DbContexts[contextName].ChangeTracker.HasChanges());
+            DbContexts[contextName].ChangeTracker.Entries();
+            return await Task.Run(() => DbContexts[contextName].ChangeTracker.HasChanges());
         }
 
         private async IAsyncEnumerable<ValidationResult> AdministratorForm_ValidateValueAsync(
@@ -204,10 +205,9 @@ namespace RPK.Administrator.Presenter
             {
                 foreach (IBindingList set in context.Value.GetDbSets(true))
                 {
-                    Type indexerType =
-                        set.GetType().GetProperties().First(x => x.GetIndexParameters().Length > 0).PropertyType;
+                    Type dataType = set.GetDataType();
 
-                    DisplayAttribute displayAttribute = indexerType.GetCustomAttributes(true)
+                    DisplayAttribute displayAttribute = dataType.GetCustomAttributes(true)
                         .FirstOrDefault(attr => attr is DisplayAttribute) as DisplayAttribute;
 
                     string dbSetName = displayAttribute?.Name ?? set.GetType().Name;
