@@ -1,19 +1,16 @@
-﻿using RPK.Administrator.View;
-using RPK.Model.MathModel;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Repository;
+using RPK.Administrator.View;
 using RPK.Model.Users;
 using RPK.Presenter;
-using RPK.Repository.MathModel;
-using RPK.Repository.Users;
 using System;
-using System.Linq;
-using System.Windows.Forms;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
-using Repository;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Windows.Forms;
 
 namespace RPK.Administrator.Presenter
 {

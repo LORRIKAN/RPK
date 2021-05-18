@@ -62,7 +62,7 @@ namespace RPK.InterfaceElements.ResearcherFormElements
         protected object? value;
         public virtual object? Value
         {
-            get => value; 
+            get => value;
             set
             {
                 Parameter!.Value = value;

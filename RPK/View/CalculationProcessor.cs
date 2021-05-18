@@ -56,9 +56,11 @@ namespace RPK.Researcher.View
                     calculationResultsInner!.CalculationTime = stopwatch.ElapsedMilliseconds;
                 }
                 catch (OperationCanceledException) { calculationResultsInner = null; }
-                catch {
+                catch
+                {
                     ErrorMessage = "Процесс расчёта был завершён с ошибкой. Возможно, не хватает одного из параметров, или он имеет " +
-                "неподходящее для математической модели значение."; calculationResultsInner = null; }
+                "неподходящее для математической модели значение."; calculationResultsInner = null;
+                }
 
                 stopwatch.Stop();
 

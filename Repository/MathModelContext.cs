@@ -3,7 +3,6 @@ using Repository;
 using RPK.Model;
 using RPK.Model.MathModel;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -237,7 +236,7 @@ namespace RPK.Repository.MathModel
                 {
                     Type otherDbSetDataType = otherDbSet.GetDataType();
 
-                    if (!otherDbSetDataType.IsSubclassOf(typeof(ParameterTypeBase)) 
+                    if (!otherDbSetDataType.IsSubclassOf(typeof(ParameterTypeBase))
                         || otherDbSetDataType.IsAssignableTo(dataType))
                         continue;
 

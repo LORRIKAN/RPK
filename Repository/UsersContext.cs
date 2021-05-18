@@ -79,7 +79,7 @@ namespace RPK.Repository.Users
             Users.Load();
         }
 
-        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName, 
+        public override async IAsyncEnumerable<ValidationResult> ValidateAsync(object value, IBindingList dataSource, string columnName,
             int rowIndex)
         {
             if (await RowCanBeChangedAsync(dataSource, rowIndex) is false)

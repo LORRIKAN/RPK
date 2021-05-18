@@ -13,7 +13,7 @@ namespace RPK.InterfaceElements.ResearcherFormElements
 
         public override object? Value
         {
-            get => base.Value; 
+            get => base.Value;
             set
             {
                 base.value = value;

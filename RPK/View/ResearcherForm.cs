@@ -511,8 +511,8 @@ namespace RPK.Researcher.View
 
             SetEnabledCertainControlsDueToVisualization(true);
 
-            if (taskDialogResult is TaskDialogResult.Cancel 
-                || taskDialogResult is TaskDialogResult.Close 
+            if (taskDialogResult is TaskDialogResult.Cancel
+                || taskDialogResult is TaskDialogResult.Close
                 || calculationResults is null)
                 return;
 

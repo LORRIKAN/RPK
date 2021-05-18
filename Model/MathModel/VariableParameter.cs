@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RPK.Model.MathModel
 {
@@ -24,7 +23,7 @@ namespace RPK.Model.MathModel
         [Display(Name = "Верхняя регламентная граница")]
         [Required]
         public double ValueUpperBound { get; set; }
-        
+
         [Display(Name = "Нижняя регламентная граница")]
         [Required]
         public double ValueLowerBound { get; set; }
