@@ -77,6 +77,7 @@ namespace RPK.Administrator.Presenter
                     };
 
                     c.DataPropertyName = m.Name;
+                    c.Resizable = DataGridViewTriState.True;
                     c.Name = m.Name;
                     c.HeaderText = m.HeaderText;
                     c.ReadOnly = m.ReadOnly;
