@@ -137,7 +137,6 @@ namespace RPK.Administrator.Presenter
 
         private async Task<bool> AdministratorForm_AnyChangesForContextAsync(string contextName)
         {
-            DbContexts[contextName].ChangeTracker.Entries();
             return await Task.Run(() => DbContexts[contextName].ChangeTracker.HasChanges());
         }
 
