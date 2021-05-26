@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Administrator", "Administra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repository", "Repository\Repository.csproj", "{10A1FC9F-CF06-444B-9342-B43718A38959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationController", "ApplicationController\ApplicationController.csproj", "{A3295B12-13B7-4226-B632-579C0158875F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationController", "ApplicationController\ApplicationController.csproj", "{A3295B12-13B7-4226-B632-579C0158875F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presenter", "Presenter\Presenter.csproj", "{72CDCFE7-2E7F-4676-9965-EFF765DD8D11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presenter", "Presenter\Presenter.csproj", "{72CDCFE7-2E7F-4676-9965-EFF765DD8D11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
